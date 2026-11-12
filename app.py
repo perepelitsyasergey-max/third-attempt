@@ -404,7 +404,9 @@ def get_contracts():
             'counterparty_2': i.counterparty_2_db,
             'contract_date': i.contract_date_db,
             'end_date': i.end_date_db,
-            'contract_stage': i.contract_stage_db
+            'end_date': i.end_date_db,
+            'contract_stage': i.contract_stage_db,
+            'user': i.user_db
         })
 
     return jsonify(contracts_list), 200
@@ -429,6 +431,7 @@ def get_contract(contract_id):
         'contract_date': contract.contract_date_db,
         'end_date': contract.end_date_db,
         'auto_prolongation': contract.auto_prolongation_db,
+        'user': contract.user_db,
         'contract_type': contract.contract_type_db,
         'contract_stage': contract.contract_stage_db,
         'funds_type': contract.funds_type_db,

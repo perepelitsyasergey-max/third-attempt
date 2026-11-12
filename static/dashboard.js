@@ -92,7 +92,7 @@
 
 document.addEventListener('DOMContentLoaded', () => {
 
-    
+
     // ===========================================================================================
     // 1. ЗМІННІ ТА ЕЛЕМЕНТИ DOM
     // ===========================================================================================
@@ -145,6 +145,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Масив для зберігання завантажених товарів та їх цін
     let productsCache = [];
+    // КЕШ ДЛЯ ДОГОВОРІВ. Використовуєтьсч
+    let contractsCacheList = [];
 
     // ===========================================================================================
     // 2. ПЕРЕМИКАННЯ ВКЛАДОК
@@ -189,7 +191,7 @@ document.addEventListener('DOMContentLoaded', () => {
     switchTab(boxTabContracts);
     loadContracts();
     // -----------------------------------------------------------------------------------------------
-    
+
 
 
     // ===========================================================================================
@@ -226,7 +228,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // -----------------------------------------------------------------------------------------------
 
     // 3.5. Функція збору даних з форми товару
-    function getProductFormData() {        
+    function getProductFormData() {
 
         // Збираємо всі поля форми (з атрибутом name) у спеціальний об'єкт FormData
         const formData = new FormData(formAddProduct);
@@ -247,7 +249,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function sendProductOnServer(productData) {
         try {
             const productId = productData['product-id'];
-            
+
             let method;
             let url;
 
@@ -286,7 +288,7 @@ document.addEventListener('DOMContentLoaded', () => {
         btnSaveProduct.addEventListener('click', async () => {
             const productData = getProductFormData();
             const result = await sendProductOnServer(productData);
-            
+
             if (result) {
                 closeAddProductModal();
                 await loadProducts();
@@ -320,8 +322,8 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const table = document.createElement('table');        
-        
+        const table = document.createElement('table');
+
         table.innerHTML = `
             <thead>
                 <tr>
@@ -421,7 +423,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function attachDeleteProductEvents(container) {
         const deleteButtons = container.querySelectorAll('.btn-delete-product');
         deleteButtons.forEach(button => {
-            button.addEventListener('click', function() {
+            button.addEventListener('click', function () {
                 const productId = this.getAttribute('data-id');
                 if (confirm('Ви дійсно бажаєте видалити цей товар?')) {
                     deleteProductOnServer(productId);
@@ -436,15 +438,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // ===========================================================================================
 
     // 4.1. Функція відкриття модального вікна для створення товару
-    
+
     function openAddCounterpartyModal() {
-        if(formAddCounterparty) {
+        if (formAddCounterparty) {
             formAddCounterparty.reset();
         }
         if (modalCounterpartyTitle) {
-            modalCounterpartyTitle.innerText ="Додати контрагента"
+            modalCounterpartyTitle.innerText = "Додати контрагента"
         }
-        document.getElementById('counterparty-id').value='';
+        document.getElementById('counterparty-id').value = '';
         modalAddCounterparty.showModal();
     }
     // -----------------------------------------------------------------------------------------------
@@ -460,7 +462,7 @@ document.addEventListener('DOMContentLoaded', () => {
         modalAddCounterparty.close();
     }
     // -----------------------------------------------------------------------------------------------
-    
+
     // 4.4. Обробник кліку на хрестик модального вікна Контрагенти
     btnCloseModalCounterparty.addEventListener('click', closeAddCounterpartyModal);
     // -----------------------------------------------------------------------------------------------
@@ -479,7 +481,7 @@ document.addEventListener('DOMContentLoaded', () => {
             counterpartyData['counterparty-edrpou'] = counterpartyData['counterparty-edrpou'].trim();
 
             const valEdrpou = counterpartyData['counterparty-edrpou'];
-            
+
             // Перевіряємо, чи це число (тільки цифри) і чи правильна довжина
             if (!/^\d+$/.test(valEdrpou) || (valEdrpou.length !== 8 && valEdrpou.length !== 10)) {
                 alert('Поле ЄДРПОУ (РНОКПП) повинно складатися ВИКЛЮЧНО з цифр і містити рівно 8 або 10 знаків!');
@@ -492,7 +494,7 @@ document.addEventListener('DOMContentLoaded', () => {
             counterpartyData['counterparty-ipn'] = counterpartyData['counterparty-ipn'].trim();
 
             const valIpn = counterpartyData['counterparty-ipn'];
-            
+
             // Перевіряємо, чи це число (тільки цифри) і чи правильна довжина
             if (!/^\d+$/.test(valIpn) || (valIpn.length !== 10 && valIpn.length !== 12)) {
                 alert('Поле ІПН повинно складатися ВИКЛЮЧНО з цифр і містити рівно 10 або 12 знаків!');
@@ -505,13 +507,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // -------------------------------------------------------------------------------------------------
 
     // 4.6. Відправка даних створеного або відредагованого Контрагента на сервер (POST / PUT)
-    async function sendCounterpartyOnServer (counterpartyData) {
+    async function sendCounterpartyOnServer(counterpartyData) {
         try {
             const counterpartyId = counterpartyData['counterparty-id'];
 
             let method;
             let url;
-            
+
             // Якщо редагуємо існуючого контрагента
             if (counterpartyId) {
                 method = 'PUT';
@@ -524,7 +526,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 url = '/api/counterparties';
             }
 
-            const response = await fetch (url, {
+            const response = await fetch(url, {
                 method: method,
                 headers: {
                     'Content-Type': 'application/json'
@@ -539,11 +541,11 @@ document.addEventListener('DOMContentLoaded', () => {
             return result;
 
         }
-        catch (error){
+        catch (error) {
             console.error('Помилка при збережені контрагента:', error);
-            alert ('Не вдалося зберегти контрагента');
+            alert('Не вдалося зберегти контрагента');
             return null;
-        }        
+        }
     }
     // -------------------------------------------------------------------------------------------------
 
@@ -553,42 +555,42 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnSaveCounterparty) {
         // Перевіряємо, чи існує кнопка "Зберегти контрагента" на сторінці (щоб уникнути помилки, якщо елемент null)
 
-        btnSaveCounterparty.addEventListener('click', async () => { 
+        btnSaveCounterparty.addEventListener('click', async () => {
             // Додаємо слухач події кліку на кнопку збереження та робимо функцію асинхронною (async), щоб використовувати await
 
             // Зупиняємо стандартну поведінку форми/кнопки
-            event.preventDefault();            
-            
-            const counterpartyData = getCounterpartyFormData(); 
+            event.preventDefault();
+
+            const counterpartyData = getCounterpartyFormData();
             // Викликаємо функцію збору даних з форми та зберігаємо отриманий об'єкт { ключ: значення } у змінну counterpartyData
-            
+
             // Якщо валідація не пройшла (отримали null) — одразу виходимо.
             // Вікно НЕ закриється, дані залишаться на місці і не потрібно перезаповнювати форму!
             if (!counterpartyData) {
-                return; 
+                return;
             }
-            
-            const result = await sendCounterpartyOnServer(counterpartyData); 
+
+            const result = await sendCounterpartyOnServer(counterpartyData);
             // Відправляємо зібрані дані на бекенд (Flask) через POST-запит та чекаємо (await) на відповідь сервера
 
-            if (result) { 
+            if (result) {
                 // Перевіряємо, чи успішно пройшла відправка на сервер (якщо сервер повернув позитивну відповідь)
 
-                closeAddCounterpartyModal(); 
+                closeAddCounterpartyModal();
                 // Закриваємо модальне вікно додавання контрагента
-                
+
                 await loadCounterparties();
             }
-        }); 
+        });
         // Закриваємо асинхронну функцію-обробник події кліку
-    } 
+    }
     // Закриваємо блок перевірки if (btnSaveCounterparty)
     // ----------------------------------------------------------------------------------------------------------------
 
     // 4.8. Функція завантаження всіх Контрагентів з сервера (GET)
     async function loadCounterparties() {
         try {
-            const response =await fetch('/api/counterparties');
+            const response = await fetch('/api/counterparties');
             if (!response.ok) {
                 throw new Error('Помилка завантаження контрагентів');
             }
@@ -598,14 +600,14 @@ document.addEventListener('DOMContentLoaded', () => {
             counterparties.sort((a, b) => a.id - b.id);
 
             renderCounterparties(counterparties)
-            
+
         }
         catch (error) {
             console.error('Помилка', error)
         }
     }
     // ---------------------------------------------------------------------------------------------------
-    
+
 
     // 4.9. Функція відображення списку контрагентів у вигляді таблиці
     function renderCounterparties(counterparties) {
@@ -634,7 +636,7 @@ document.addEventListener('DOMContentLoaded', () => {
             </thead>
             <tbody></tbody>
         `;
-       // Потрібно сформувати tbody та заповнити його data-рядками:
+        // Потрібно сформувати tbody та заповнити його data-рядками:
         const tbody = table.querySelector('tbody');
 
         counterparties.forEach(i => {
@@ -668,7 +670,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function loadCounterpartyDetalis(counterpartyId) {
         try {
             const response = await fetch(`/api/counterparties/${counterpartyId}`);
-            if(!response.ok) {
+            if (!response.ok) {
                 throw new Error('Помилка завантаження даних контрагента');
             }
             const counterparty = await response.json();
@@ -689,15 +691,15 @@ document.addEventListener('DOMContentLoaded', () => {
         catch (error) {
             console.error('Помилка:', error);
             alert('Не вдалося завантажили дані контрагента з бази');
-        }        
+        }
     }
     // ---------------------------------------------------------------------------------------------
-    
+
     // 4.11. Прив'язка подій до кнопок "Редагувати" Контрагента у таблиці
-    
+
     function attachEditCounterpartyEvents(container) {
         const editButtons = container.querySelectorAll('.btn-edit-counterparty');
-        editButtons.forEach (i => {
+        editButtons.forEach(i => {
             i.addEventListener('click', () => {
                 const counterpartyId = i.getAttribute('data-id');
                 loadCounterpartyDetalis(counterpartyId);
@@ -707,7 +709,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --------------------------------------------------------------------------------------
 
     // 4.12. Функція відправки DELETE-запиту на сервер для видалення контрагента
-    async function deleteCounterpartyOnServer (counterpartyId) {
+    async function deleteCounterpartyOnServer(counterpartyId) {
         try {
             const response = await fetch(`/api/counterparties/${counterpartyId}`, {
                 method: 'DELETE'
@@ -715,16 +717,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (!response.ok) {
                 // 1. Отримуємо текст помилки від Flask
-                const errorData = await response.json(); 
-                
+                const errorData = await response.json();
+
                 // 2. Кидаємо помилку, щоб зупинити execution
-                throw new Error(errorData.error || 'Помилка при видалені контрагента'); 
+                throw new Error(errorData.error || 'Помилка при видалені контрагента');
             }
             loadCounterparties(); // Цей рядок НЕ виконається, якщо була помилка
         } catch (error) {
             // 3. Сюди потрапляє об'єкт Error, який ми тільки-но створили через `throw`
             // error.message буде містити або text з Flask, або ваш дефолтний текст
-            alert(`Не вдалося видалити контрагента: ${error.message}`); 
+            alert(`Не вдалося видалити контрагента: ${error.message}`);
         }
     }
     // ----------------------------------------------------------------------------------------
@@ -738,16 +740,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const deleteButtons = container.querySelectorAll('.btn-delete-counterparty');
 
         // Перебираємо кожну знайдену кнопку з отриманого списку за допомогою циклу forEach
-        deleteButtons.forEach (button => {
+        deleteButtons.forEach(button => {
 
             // Вішаємо на поточну кнопку (button) слухач події "клік" (click)
-            button.addEventListener('click', function() {
+            button.addEventListener('click', function () {
 
                 // Отримуємо значення атрибута data-id кнопки, на яку клікнув користувач (this посилається на цю кнопку)
                 const counterpartyId = this.getAttribute('data-id');
 
                 // Показуємо вспливаюче вікно підтвердження (ОК / Скасувати). Якщо користувач натискає "ОК", confirm повертає true
-                if (confirm ('Ви дійсно бажаєте видалити цього контрагента?')) {
+                if (confirm('Ви дійсно бажаєте видалити цього контрагента?')) {
 
                     // Викликаємо функцію відправки DELETE-запиту на сервер, передаючи ID контрагента
                     deleteCounterpartyOnServer(counterpartyId);
@@ -756,7 +758,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }) // Закриваємо цикл forEach
     } // Закриваємо функцію attachDeleteCounterpartyEvents
     // --------------------------------------------------------------------------------------------
-    
+
 
 
     // ===========================================================================================
@@ -764,7 +766,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ===========================================================================================
 
     // 5.1. Функція відкриття модального вікна для створення Договору    
-    async function openAddContracttModal () {
+    async function openAddContracttModal() {
         if (formAddContract) {
             formAddContract.reset();
         }
@@ -793,31 +795,31 @@ document.addEventListener('DOMContentLoaded', () => {
             'EUR': { total: 0, paid: 0, shipped: 0 }
         };
         updateContractTotalsDisplay(zeroTotals);
-        
+
         // Завантажуємо актуальний список контрагентів у селекти перед відкриттям вікна
         await loadCounterpartiesForSelect();
-        
+
         modalAddcontract.showModal();
     }
     // ------------------------------------------------------------------------------------------
-    
+
     // 5.2 Обробник кліку на кнопку "Додати договір"
-    
+
     btnOpenModalContract.addEventListener('click', () => {
-        openAddContracttModal ();
+        openAddContracttModal();
     })
     // ---------------------------------------------------------------------------------------------
 
     // 5.3. Функція закриття модального вікна Договори
-    function closeAddContractModal () {
+    function closeAddContractModal() {
         modalAddcontract.close();
     }
     // -----------------------------------------------------------------------------------------------
-    
+
     // 5.4. Обробник кліку на хрестик модального вікна Контрагенти
     btnCloseModalContract.addEventListener('click', closeAddContractModal);
     // --------------------------------------------------------------------------------------------------
-    
+
     // 5.5. Функція збору даних з форми Контрагента
     function getContractFormData() {
         // Збираємо всі поля форми Контрагента (з атрибутом name) у спеціальний об'єкт FormData
@@ -832,7 +834,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // -----------------------------------------------------------------------------------------------------
 
     // 5.6. Відправка даних створеного або відредагованого Контрагента на сервер (POST / PUT)
-    async function sendContractOnServer (contractData) {
+    async function sendContractOnServer(contractData) {
         try {
             const contractId = contractData['contract-id'];
 
@@ -851,12 +853,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 url = '/api/contracts';
             }
 
-            const response = await fetch (url, {
+            const response = await fetch(url, {
                 method: method,
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body:JSON.stringify(contractData)
+                body: JSON.stringify(contractData)
             });
             if (!response.ok) {
                 throw new Error(`Помилка сервера: ${response.status}`);
@@ -867,15 +869,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         catch (error) {
             console.error('Помилка при збережені договору:', error);
-            alert ('Не вдалося зберегти договір')
+            alert('Не вдалося зберегти договір')
             return null;
         }
     }
     // -------------------------------------------------------------------------------------------------            
-           
+
     // 5.7. Обробник кліку на кнопку "Зберегти" у модальному вікні Договір
     if (btnSaveContract) {
-        btnSaveContract.addEventListener('click', async () =>{
+        btnSaveContract.addEventListener('click', async () => {
             const contractData = getContractFormData();
 
             // Примусово додаємо реєстраційний номер з інпуту (навіть якщо він заблокований / disabled)
@@ -883,7 +885,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (regNumberInput) {
                 contractData['reg-number-contract'] = regNumberInput.value;
             }
-            
+
             const result = await sendContractOnServer(contractData);
 
             if (result) {
@@ -900,7 +902,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     // ГЕНЕРАЦІЯ РЕЄСТРАЦІЙНОГО НОМЕРА БР
                     const currentYear = new Date().getFullYear().toString().slice(-2); // "26"
                     const generatedRegNumber = `БР-${newId}/${currentYear}`;
-                    
+
                     // Якщо такий елемент (поле вводу з цим ID) існує
                     if (regNumberInput) {
                         // Записати згенерований текст (наприклад, БР-20/26) всередину цього поля введення на формі,
@@ -934,10 +936,10 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const counterparties = await response.json();
-            
+
             // Знаходимо єдиний counterpartiesList за його id
             const counterpartiesList = document.getElementById('counterparties-list');
-            
+
             if (counterpartiesList) {
                 let optionsHtml = '';
                 counterparties.forEach(i => {
@@ -947,7 +949,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const safeName = (i.counterparty_name || '').replace(/"/g, '&quot');
                     optionsHtml += `<option value="${safeName}">`;
                 });
-                
+
                 counterpartiesList.innerHTML = optionsHtml;
             }
         }
@@ -969,12 +971,89 @@ document.addEventListener('DOMContentLoaded', () => {
             // Сортуємо масив договорів за зростанням ID перед відображенням
             contracts.sort((a, b) => a.id - b.id);
 
-            renderContracts(contracts);
+            contractsCacheList = contracts; // Зберігаємо договори в кеш
+
+            populateUserFilterOptions(contractsCacheList); // Заповнюємо випадаючий список унікальними користувачами для фільтрації
+
+            applyContractFilter(); // Запускаємо фільтрацію/відображення договорів
+
         } catch (error) {
             console.error('Помилка:', error);
         }
     }
     // ------------------------------------------------------------------------------------------------------
+
+    // Функція застосування фільтра за статусом
+    function applyContractFilter() {
+        const filterSelect = document.getElementById('filter-contract-stage');
+        const selectedStage = filterSelect ? filterSelect.value : '';
+
+        const userSelect = document.getElementById('filter-contract-user'); // Отримуємо селект користувача
+        const selectedUser = userSelect ? userSelect.value : ''; // Оголошуємо змінну
+
+
+        let filtered = contractsCacheList; // По замовчуванню беремо всі договори з кешу
+
+        // Фільтруємо за статусом (якщо вибрано)
+        if (selectedStage) {
+            filtered = filtered.filter(i => i.contract_stage === selectedStage);
+        }
+
+        // Фільтруємо за користувачем (якщо вибрано)
+        if (selectedUser) {
+            filtered = filtered.filter(i => i.user === selectedUser);
+        }
+        renderContracts(filtered); // Передаємо відфільтрований список у таблицю
+    }
+    // -----------------------------------------------------------------------------------------------
+
+
+    // Функція заповнення випадаючого списку користувачів для фільтра договорів за користувачами
+    function populateUserFilterOptions(contracts) {
+        const userSelect = document.getElementById('filter-contract-user');
+        if (!userSelect) return;
+
+        // Зберігаємо поточне вибране значення, щоб воно не скидалося при перезавантаженні списку
+        const currentValue = userSelect.value;
+
+        // Збираємо унікальні імена користувачів із масиву договорів
+        // Використовуємо Set, щоб уникнути дублікатів, і фільтруємо порожні значення (null / undefined / '')
+        const uniqueUsers = [...new Set(contracts.map(i => i.user).filter(Boolean))];
+
+        // Сортуємо імена за алфавітом для зручності
+        uniqueUsers.sort();
+
+        // Формуємо HTML для селекта (починаючи з опції "Усі користувачі")
+        let optionsHtml = '<option value="">Усі користувачі</option>';
+        uniqueUsers.forEach(userName => {
+            optionsHtml += `<option value="${userName}">${userName}</option>`;
+        });
+
+        userSelect.innerHTML = optionsHtml;
+
+        // Відновлюємо вибране значення, якщо воно все ще є в списку
+        if (uniqueUsers.includes(currentValue)) {
+            userSelect.value = currentValue;
+        }
+    }
+    // ----------------------------------------------------------------------------------------------
+
+    // Слухач події зміни значення у випадаючому списку фільтра за СТАТУСОМ
+    const filterContractStageSelect = document.getElementById('filter-contract-stage');
+    if (filterContractStageSelect) {
+        filterContractStageSelect.addEventListener('change', () => {
+            applyContractFilter();
+        });
+    }
+    // ------------------------------------------------------------------------------------------------
+
+    // Слухач події зміни значення у випадаючому списку фільтра за КОРИСТУВАЧЕМ
+    const filterContractUserSelect = document.getElementById('filter-contract-user');
+    if (filterContractUserSelect) {
+        filterContractUserSelect.addEventListener('change', () => {
+            applyContractFilter();
+        });
+    }
 
     // 5.10. Функція відображення списку договорів у вигляді таблиці
     function renderContracts(contracts) {
@@ -986,6 +1065,14 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        // ДОДАЄМО СЛОВНИК
+        const stageTranslations = {
+            "concluding": "Укладання",
+            "active": "Діючий",
+            "without_support": "Діючий (без супроводу)",
+            "completed": "Завершений"
+        };
+
         const table = document.createElement('table');
         table.innerHTML = `
             <thead>
@@ -996,7 +1083,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     <th>Контрагент 1</th>
                     <th>Контрагент 2</th>
                     <th>Дата дог.</th>
+                    <th>Дата закінчення</th>
                     <th>Статус</th>
+                    <th>Користувач</th>
                     <th>Дії</th>
                     <th>Видалити</th>
                 </tr>
@@ -1007,6 +1096,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const tbody = table.querySelector('tbody');
 
         contracts.forEach(i => {
+
+            // 👉 ПЕРЕКЛАДАЄМО СТАТУС ДЛЯ КОЖНОГО ДОГОВОРУ
+            const displayStage = stageTranslations[i.contract_stage] || i.contract_stage || '';
+
             const row = document.createElement('tr');
             row.innerHTML = `
                 <td>${i.id}</td>
@@ -1015,7 +1108,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td>${i.counterparty_1 || ''}</td>
                 <td>${i.counterparty_2 || ''}</td>
                 <td>${i.contract_date || ''}</td>
-                <td>${i.contract_stage || ''}</td>
+                <td>${i.end_date || ''}</td>
+                <td>${displayStage}</td> <!-- ВИВЕДЕННЯ ПЕРЕКЛАДЕНОГО СТАТУСУ -->
+                <td>${i.user || ''}</td>
                 <td>
                     <button class="btn-edit-contract" data-id="${i.id}">Редагувати</button>
                 </td>
@@ -1028,7 +1123,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         container.appendChild(table);
         attachEditContractEvents(container);
-        attachDeleteContractEvents(container);        
+        attachDeleteContractEvents(container);
     }
     // -------------------------------------------------------------------------------------------------------
 
@@ -1063,6 +1158,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('contract-date').value = contract.contract_date || '';
             document.getElementById('end-date').value = contract.end_date || '';
             document.getElementById('auto-prolongation').checked = contract.auto_prolongation || false;
+            document.getElementById('contract-user').value = contract.user || '';
             document.getElementById('contract-type').value = contract.contract_type || '';
             document.getElementById('contract-stage').value = contract.contract_stage || '';
             document.getElementById('funds-type').value = contract.funds_type || '';
@@ -1118,7 +1214,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const deleteButtons = container.querySelectorAll('.btn-delete-contract');
 
         deleteButtons.forEach(button => {
-            button.addEventListener('click', function() {
+            button.addEventListener('click', function () {
                 const contractId = this.getAttribute('data-id');
 
                 if (confirm('Ви дійсно бажаєте видалити цей договір?')) { // Можна змінити текст на "цього договору"
@@ -1153,7 +1249,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (formAddSpecification) {
             formAddSpecification.reset();
         }
-        
+
         // Зберігаємо або очищаємо ID специфікації у прихованому інпуті форми
         const specificationId = document.getElementById('specification-id');
         if (specificationId) {
@@ -1166,7 +1262,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Знаходимо тіло таблиці товарів у модальному вікні та повністю його очищаємо
         const tbody = document.querySelector('#modal-add-specification .spec-products-table tbody');
         if (tbody) {
-            tbody.innerHTML = ''; 
+            tbody.innerHTML = '';
         }
 
         // Перевіряємо, чи передано ID: якщо так — режим редагування, якщо ні — створення нової
@@ -1206,7 +1302,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     specData.items.forEach((item, idx) => {
                         if (rows[idx]) {
                             const row = rows[idx];
-                            
+
                             // Заповнюємо основні поля товару з безпечним пошуком селекторів
                             const nameInput = row.querySelector('input[name="product-name"]');
                             const qtyInput = row.querySelector('input[name="product-qty"]');
@@ -1215,7 +1311,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             if (nameInput) nameInput.value = item.productName || '';
                             if (qtyInput) qtyInput.value = item.productQty || '';
                             if (priceInput) priceInput.value = item.productPrice || '';
-                            
+
                             // Заповнюємо ставку ПДВ, якщо вона є
                             const vatSelect = row.querySelector('select[name="product-vat"]');
                             if (vatSelect) {
@@ -1226,17 +1322,17 @@ document.addEventListener('DOMContentLoaded', () => {
                             if (item.payShipRecords && item.payShipRecords.length > 0) {
                                 // Зберігаємо масив записів напряму у властивість рядка
                                 row._payShipRecords = item.payShipRecords;
-                                
+
                                 // Рахуємо суми для відображення у мітці
                                 let totalPay = item.payShipRecords.reduce((sum, r) => sum + (parseFloat(r.paySum) || 0), 0);
                                 let totalShip = item.payShipRecords.reduce((sum, r) => sum + (parseFloat(r.shipSum) || 0), 0);
-                                
+
                                 const infoSpan = row.querySelector('.payment-shipping-info');
                                 if (infoSpan) {
                                     infoSpan.textContent = `💳 ${totalPay.toFixed(2)} | 📦 ${totalShip.toFixed(2)}`;
                                 }
-                            }                            
-                            
+                            }
+
                             // Завантаження випадаючого списку товарі
                             attachRowProductSelectEvent(row);
 
@@ -1251,7 +1347,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                     });
 
-                    
+
                 }
             } catch (error) {
                 console.error(error);
@@ -1264,7 +1360,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Оновлюємо стану поля курсу залежно від обраної валюти
             updateCurrencyRateState();
-            
+
             // Додаємо новий рядок для товару
             addNewSpecificationRow();
         }
@@ -1302,7 +1398,7 @@ document.addEventListener('DOMContentLoaded', () => {
         btnOpenModalSpecification.addEventListener('click', () => {
             // Перевіряємо, чи збережено договір (чи є значення в інпуті contract-id)
             const contractId = document.getElementById('contract-id').value;
-            
+
             if (!contractId) {
                 alert('Будь ласка, спочатку збережіть договір (натисніть кнопку збереження договору), перш ніж додавати специфікації!');
                 return; // Зупиняємо виконання і не відкриваємо вікно
@@ -1339,17 +1435,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Зберігаємо масив товарів у глобальну змінну для подальшого використання
             productsCache = await response.json();
-            
+
             // Знаходимо productsList за його id у формі специфікації
             const productsList = document.getElementById('products-list');
-            
+
             if (productsList) {
                 let optionsHtml = '';
                 productsCache.forEach(i => {
                     // Для кожного товару створюємо HTML-тег <option> з його назвою
                     optionsHtml += `<option value="${i.product_name}">`;
                 });
-                
+
                 productsList.innerHTML = optionsHtml;
             }
         }
@@ -1363,22 +1459,22 @@ document.addEventListener('DOMContentLoaded', () => {
     function attachRowProductSelectEvent(row) {
         // Шукаємо інпут за його атрибутом name="product-name" у межах поточного рядка
         const productInput = row.querySelector('input[name="product-name"]');
-        
+
         // Перевіряємо, чи існує цей елемент на сторінці (щоб уникнути помилок, якщо вікно ще не відкрите)
         if (productInput) {
             // Додаємо слухач події 'change', яка спрацьовує, коли користувач здійснив вибір варіанту зі списку productsList або прибрав курсор з поля введення назви товару
             productInput.addEventListener('change', (e) => {
                 // Отримуємо текст, який ввів/обрав користувач, та за допомогою .trim() видаляємо зайві пробіли на початку і в кінці
-                const selectedName = e.target.value.trim();          
-                
+                const selectedName = e.target.value.trim();
+
                 // Проходимо по масиву productsCache і шукаємо об'єкт (товар), у якого поле product_name збігається з обраною назвою
-                const foundProduct = productsCache.find(p => p.product_name === selectedName);                
-                
+                const foundProduct = productsCache.find(p => p.product_name === selectedName);
+
                 // Шукаємо найближчий батьківський елемент рядка таблиці (<tr>) для поточного інпуту товару
                 const row = productInput.closest('tr');
                 // Всередині цього ж рядка шукаємо поле введення ціни за його атрибутом name="product-price"
                 const priceInput = row.querySelector('input[name="product-price"]');
-                
+
                 // Перевіряємо: чи вдалося знайти товар у базі даних (foundProduct) і чи існує поле ціни в цьому рядку (priceInput)
                 if (foundProduct && priceInput) {
                     // Якщо все є — автоматично записуємо ціну з бази у значення поля ціни цього рядка
@@ -1436,7 +1532,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (payShipInfo) {
             payShipInfo.style.cursor = 'pointer';
             payShipInfo.title = 'Клікніть, щоб редагувати оплати та відвантаження';
-            
+
             payShipInfo.onclick = () => {
                 openPayShipModal(row);
             };
@@ -1489,7 +1585,7 @@ document.addEventListener('DOMContentLoaded', () => {
             tr._payShipRecords = productData.payShipRecords;
             let totalPay = productData.payShipRecords.reduce((sum, r) => sum + (parseFloat(r.paySum) || 0), 0);
             let totalShip = productData.payShipRecords.reduce((sum, r) => sum + (parseFloat(r.shipSum) || 0), 0);
-            
+
             const infoSpan = tr.querySelector('.payment-shipping-info');
             if (infoSpan) {
                 infoSpan.textContent = `💳 ${totalPay.toFixed(2)} | 📦 ${totalShip.toFixed(2)}`;
@@ -1515,7 +1611,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Підключаємо загальні події для рядка: відстеження змін у полях кількості/ціни для перерахунку та відкриття міні-вікна оплат/відвантажень
         attachRowEvents(tr);
-        
+
         // Якщо товар заповнений (при редагуванні), одразу рахуємо вартість
         if (productData) {
             calculateRowCost(tr);
@@ -1528,8 +1624,8 @@ document.addEventListener('DOMContentLoaded', () => {
     rows.forEach(row => {
 
         // Автозаповнення ціни при виборі товару
-        attachRowProductSelectEvent(row);   
-        
+        attachRowProductSelectEvent(row);
+
         // Прив'язка подій до:
         // 1. Введення кількості
         // 2. Введення ціни для розрахунку
@@ -1538,7 +1634,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     // -------------------------------------------------------------------------------------------
 
-    
+
     // 6.13 Обробник кліку на кнопку додавання нового рядка товару
     const btnAddSpecRow = document.getElementById('btn-add-row'); // або ваш селектор кнопки "+ Додати товар"
     if (btnAddSpecRow) {
@@ -1592,7 +1688,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (specTotalAmountInput) {
             const currencyRateInput = document.getElementById('spec-currency-rate');
             const rate = parseFloat(currencyRateInput?.value.replace(',', '.')) || 1.0000;
-            
+
             // Множимо загальну вартість у валюті на курс валюти
             const totalInUah = totalCost * rate;
             specTotalAmountInput.value = totalInUah.toFixed(2);
@@ -1612,7 +1708,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Отримуємо список усіх поточних рядків (<tr>) у цій таблиці
         const rows = tbody.querySelectorAll('tr');
-        
+
         let items = [];
 
         rows.forEach(row => {
@@ -1693,7 +1789,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Викликаємо функцію збору даних
             const specData = getSpecificationFormData();
-            
+
             // Викликаємо функцію відправки
             const result = await sendSpecificationOnServer(contractId, specId, specData);
 
@@ -1754,7 +1850,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <td>${item.paid} / ${item.shipped}</td>
                     </tr>
                 `).join('');
-                
+
                 // 2. А тепер малюємо єдину цілісну картку без розривів тегів
                 html += `
                     <!-- Зовнішній контейнер картки специфікації (сірий блок) -->
@@ -1863,43 +1959,43 @@ document.addEventListener('DOMContentLoaded', () => {
     // 6.21. Функція відображення підрахованих сум договору у формі
     function updateContractTotalsDisplay(totals) {
         document.getElementById('sum-uah').textContent = totals.UAH.total.toLocaleString('uk-UA', {
-                                                            minimumFractionDigits: 2,
-                                                            maximumFractionDigits: 2
-                                                        })
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        })
         document.getElementById('paid-uah').textContent = totals.UAH.paid.toLocaleString('uk-UA', {
-                                                            minimumFractionDigits: 2,
-                                                            maximumFractionDigits: 2
-                                                        })
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        })
         document.getElementById('shipped-uah').textContent = totals.UAH.shipped.toLocaleString('uk-UA', {
-                                                            minimumFractionDigits: 2,
-                                                            maximumFractionDigits: 2
-                                                        })
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        })
 
         document.getElementById('sum-usd').textContent = totals.USD.total.toLocaleString('uk-UA', {
-                                                            minimumFractionDigits: 2,
-                                                            maximumFractionDigits: 2
-                                                        })
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        })
         document.getElementById('paid-usd').textContent = totals.USD.paid.toLocaleString('uk-UA', {
-                                                            minimumFractionDigits: 2,
-                                                            maximumFractionDigits: 2
-                                                        })
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        })
         document.getElementById('shipped-usd').textContent = totals.USD.shipped.toLocaleString('uk-UA', {
-                                                            minimumFractionDigits: 2,
-                                                            maximumFractionDigits: 2
-                                                        })
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        })
 
         document.getElementById('sum-eur').textContent = totals.EUR.total.toLocaleString('uk-UA', {
-                                                            minimumFractionDigits: 2,
-                                                            maximumFractionDigits: 2
-                                                        })
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        })
         document.getElementById('paid-eur').textContent = totals.EUR.paid.toLocaleString('uk-UA', {
-                                                            minimumFractionDigits: 2,
-                                                            maximumFractionDigits: 2
-                                                        })
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        })
         document.getElementById('shipped-eur').textContent = totals.EUR.shipped.toLocaleString('uk-UA', {
-                                                            minimumFractionDigits: 2,
-                                                            maximumFractionDigits: 2
-                                                        })
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        })
     }
     // ---------------------------------------------------------------------------------------------------------
 
@@ -1908,23 +2004,23 @@ document.addEventListener('DOMContentLoaded', () => {
     // 7. ОПЛА ТИ ТА ВІДВАНТАЖЕННЯ (МІНІ-ВІКНО)
     // ===========================================================================================
 
-    
+
     // 7.1. Змінні ОПЛА ТИ ТА ВІДВАНТАЖЕННЯ (МІНІ-ВІКНО)
     const modalPayShip = document.getElementById('modal-pay-ship');
     const btnCloseModalPayShip = document.getElementById('btn-close-modal-pay-ship');
     const btnAddPayShipRow = document.getElementById('btn-add-pay-ship-row');
     const btnSavePayShip = document.getElementById('btn-save-pay-ship');
     const payShipTableBody = document.querySelector('#pay-ship-table tbody');
-    
+
     // Змінна для збереження посилання на поточний рядок таблиці товарів, який редагується
     let activeProductRow = null;
     // ----------------------------------------------------------------------------------------------
 
-    
+
     // 7.2. Функція відкриття міні-вікна для конкретного рядка товару
     function openPayShipModal(row) {
         activeProductRow = row;
-        
+
         // Отримуємо назву товару для відображення у заголовку міні-вікна
         const productInput = row.querySelector('input[name="product-name"]');
         // Отримуємо елемент заголовка міні-вікна для виведення назви товару
@@ -1941,7 +2037,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Якщо у рядка (`row`) існує властивість `_payShipRecords` і вона є масивом.
         if (row._payShipRecords && Array.isArray(row._payShipRecords)) {
-            
+
             // Записуємо масив збережених даних оплат і відвантажень із властивості рядка row._payShipRecords у змінну records.
             records = row._payShipRecords;
         }
@@ -1973,7 +2069,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 7.4. Додавання нового рядка у таблицю міні-вікна
     function addPayShipRowToModal(payDate = '', paySum = '', shipDate = '', shipSum = '') {
-        
+
         // Програмно створюємо новий HTML-елемент рядка таблиці
         const tr = document.createElement('tr');
         tr.innerHTML = `
@@ -2012,7 +2108,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!activeProductRow) return;
 
             // 1. Рахуємо загальну вартість поточного рядка товару (Кількість × Ціна)
-            
+
             const qtyInput = activeProductRow.querySelector('input[name="product-qty"]');
             const priceInput = activeProductRow.querySelector('input[name="product-price"]');
             const rowQty = parseFloat(qtyInput?.value.replace(',', '.')) || 0;
@@ -2021,7 +2117,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Знаходимо всі рядки таблиці міні-вікна
             const rows = payShipTableBody.querySelectorAll('tr');
-            
+
             let records = [];
             let totalPay = 0;
             let totalShip = 0;
@@ -2031,7 +2127,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const paySum = parseFloat(tr.querySelector('input[name="pay-sum"]').value) || 0;
                 const shipDate = tr.querySelector('input[name="ship-date"]').value;
                 const shipSum = parseFloat(tr.querySelector('input[name="ship-sum"]').value) || 0;
-                
+
 
                 // Додаємо об'єкт із даними поточного рядка (дати та суми оплат і відвантажень) до масиву records
                 records.push({ payDate, paySum, shipDate, shipSum });
@@ -2042,18 +2138,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 totalShip += shipSum;
             });
 
-            
+
             // ЗАПОБІЖНИК: Перевіряємо, чи оплати або відвантаження більші за вартість товару
             if (totalPay > rowCost || totalShip > rowCost) {
                 const message = `Увага!\nЗагальна вартість товару: ${rowCost.toFixed(2)}\nВведено оплат: ${totalPay.toFixed(2)}\nВведено відвантажень: ${totalShip.toFixed(2)}\n\nОдна або обидві суми перевищують вартість товару. Бажаєте все одно зберегти?`;
-                
+
                 if (!confirm(message)) {
                     return; // Зупиняємо збереження, якщо користувач натиснув "Скасувати"
                 }
             }
-            
-            
-            
+
+
+
             // Зберігаємо масив записів напряму у властивість рядка товару
             activeProductRow._payShipRecords = records;
 
@@ -2068,8 +2164,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             modalPayShip.close();
         });
-    }    
-    
-        
+    }
+
+
 
 });

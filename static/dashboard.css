@@ -9,19 +9,28 @@
 /* =================================================================================================== */
 /* Контейнер модального вікна (базовий елемент для відліку координат) */
 .modal-content {
-  position: relative; /* Встановлює точку відліку для абсолютного позиціонування дочірніх елементів */
-  padding-top: 40px;  /* Додає відступ зверху, щоб хрестик не накладався на заголовок */
+    position: relative;
+    /* Встановлює точку відліку для абсолютного позиціонування дочірніх елементів */
+    padding-top: 40px;
+    /* Додає відступ зверху, щоб хрестик не накладався на заголовок */
 }
 
 /* Кнопка закриття (хрестик) */
 .btn-close {
-  position: absolute; /* Фіксує кнопку відносно контейнера .modal-content */
-  top: 10px;          /* Притискає кнопку на 10 пікселів від верхнього краю */
-  right: 10px;        /* Притискає кнопку на 10 пікселів від правого краю */
-  background: none;   /* Прибирає стандартний сірий фон кнопки */
-  border: none;       /* Прибирає стандартну рамку кнопки */
-  font-size: 20px;    /* Встановлює розмір символу хрестика */
-  cursor: pointer;    /* Змінює курсор миші на «вказівний палець» при наведенні */
+    position: absolute;
+    /* Фіксує кнопку відносно контейнера .modal-content */
+    top: 10px;
+    /* Притискає кнопку на 10 пікселів від верхнього краю */
+    right: 10px;
+    /* Притискає кнопку на 10 пікселів від правого краю */
+    background: none;
+    /* Прибирає стандартний сірий фон кнопки */
+    border: none;
+    /* Прибирає стандартну рамку кнопки */
+    font-size: 20px;
+    /* Встановлює розмір символу хрестика */
+    cursor: pointer;
+    /* Змінює курсор миші на «вказівний палець» при наведенні */
 }
 
 /* =================================================================================================== */
@@ -31,7 +40,8 @@
 /* 1. Робимо модальне вікно договору ширшим, щоб зручно вмістити дві колонки */
 #modal-add-contract {
     width: 90%;
-    max-width: 1200px; /* Максимальна ширина вікна */
+    max-width: 1600px;
+    /* Максимальна ширина вікна */
     border: 1px solid #ccc;
     border-radius: 8px;
     padding: 20px;
@@ -39,25 +49,168 @@
 
 /* 2. Спільний контейнер для двох колонок (використовуємо Flexbox) */
 .modal-layout {
-    display: flex;       /* Розміщуємо дочірні блоки в один рядок (по горизонталі) */
-    gap: 30px;           /* Відстань (відступ) між лівою та правою колонкою */
-    align-items: flex-start; /* Вирівнюємо колонки по верхньому краю */
+    display: flex;
+    /* Розміщуємо дочірні блоки в один рядок (по горизонталі) */
+    gap: 30px;
+    /* Відстань (відступ) між лівою та правою колонкою */
+    align-items: flex-start;
+    /* Вирівнюємо колонки по верхньому краю */
     margin-top: 15px;
 }
 
 /* 3. Ліва колонка: Основна інформація договору */
 .contract-main-info {
-    flex: 1;             /* Займає 50% ширини контейнера */
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px 15px;
+    align-items: start;
+    flex: 1.2;
+}
+
+/* Універсальний стиль для внутрішніх полів */
+.contract-main-info input[type="text"],
+.contract-main-info input[type="date"],
+.contract-main-info select,
+.contract-main-info textarea {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* 2. Точне позиціонування кожного блока за ID */
+#box-reg-number-contract {
+    grid-column: 1;
+    grid-row: 1;
+}
+
+#box-contract-type {
+    grid-column: 2;
+    grid-row: 1;
+}
+
+#box-counterparty-1 {
+    grid-column: 3;
+    grid-row: 1;
+}
+
+#box-counterparty-2 {
+    grid-column: 4;
+    grid-row: 1;
+}
+
+#box-contract-stage {
+    grid-column: 5;
+    grid-row: 1;
+}
+
+
+/* Рядок 2 */
+#box-user {
+    grid-column: 1;
+    grid-row: 2;
+}
+
+#box-contract-number {
+    grid-column: 2;
+    grid-row: 3;
+}
+
+#box-contract-date {
+    grid-column: 3;
+    grid-row: 2;
+}
+
+#box-end-date {
+    grid-column: 4;
+    grid-row: 2;
+}
+
+/* Автопролонгація (у тебе в HTML блок має id="") */
+.checkbox-container {
+    grid-column: 5;
+    grid-row: 2;
     display: flex;
-    flex-direction: column; /* Розміщуємо елементи всередині колонки один під одним */
+    flex-direction: column;
+    justify-content: flex-end;
+}
+
+
+/* Рядок 3 */
+#box-agreement-number {
+    grid-column: 1;
+    grid-row: 3;
+}
+
+#box-funds-type {
+    grid-column: 3;
+    grid-row: 3;
+}
+
+
+/* Рядок 4: Фінансові блоки */
+#box-financial-results {
+    grid-column: 1 / span 5;
+    grid-row: 4;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+}
+
+/* Стилі для трьох внутрішніх блоків усередині загального контейнера */
+#box-sum,
+#box-paid,
+#box-shipped {
+    background: #f9f9f9;
+    padding: 10px 12px;
+    border-radius: 6px;
+    border: 1px solid #e0e0e0;
+    font-size: 12px;
+}
+
+#box-financial-results label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+
+/* Рядок 5: Примітки та кнопка збереження */
+#box-contract-notes {
+    grid-column: 1 / span 5;
+    grid-row: 5;
+}
+
+#box-contract-notes textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+#btn-save-contract {
+    grid-column: 4 / span 2;
+    grid-row: 6;
+    align-self: flex-end;
+    width: 100%;
+    padding: 10px 20px;
+    cursor: pointer;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-weight: bold;
+}
+
+#btn-save-contract:hover {
+    background-color: #218838;
 }
 
 /* 4. Права колонка: Блок специфікацій */
 .contract-specifications-info {
-    flex: 1;             /* Займає інші 50% ширини контейнера */
-    border-left: 2px solid #e0e0e0; /* Сіра розділювальна лінія зліва від специфікацій */
-    padding-left: 25px;  /* Відступ від розділювальної лінії */
-    min-height: 100%;    /* Висота на всю колонку */
+    flex: 1;
+    /* Займає інші 50% ширини контейнера */
+    border-left: 2px solid #e0e0e0;
+    /* Сіра розділювальна лінія зліва від специфікацій */
+    padding-left: 25px;
+    /* Відступ від розділювальної лінії */
+    min-height: 100%;
+    /* Висота на всю колонку */
 }
 
 /* 5. Стилі для кнопки "Зберегти" внизу лівої колонки */
@@ -98,7 +251,7 @@
     margin-top: 10px;
 }
 
-.spec-products-table th, 
+.spec-products-table th,
 .spec-products-table td {
     border: 1px solid #e0e0e0;
     padding: 8px;
