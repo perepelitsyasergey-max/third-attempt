@@ -65,6 +65,7 @@ class Contract(db.Model):
     contract_date_db = db.Column(db.String(50), nullable=True)
     end_date_db = db.Column(db.String(50), nullable=True)
     auto_prolongation_db = db.Column(db.Boolean, default=False)
+    archival_contracts_db = db.Column(db.Boolean, default=False)
     user_db = db.Column(db.String(80), nullable=True)
     contract_type_db = db.Column(db.String(100), nullable=True)
     contract_stage_db = db.Column(db.String(100), nullable=True)
@@ -368,6 +369,7 @@ def create_contract():
         contract_date_db=data.get('contract-date'),
         end_date_db=data.get('end-date'),
         auto_prolongation_db=True if data.get('auto-prolongation') else False,
+        is_archived_db=True if data.get('archival-contracts') else False,
         user_db=session.get('user_in_session'),
         contract_type_db=data.get('contract-type'),
         contract_stage_db=data.get('contract-stage'),
@@ -406,7 +408,8 @@ def get_contracts():
             'end_date': i.end_date_db,
             'end_date': i.end_date_db,
             'contract_stage': i.contract_stage_db,
-            'user': i.user_db
+            'user': i.user_db,
+            'is_archived': i.archival_contracts_db
         })
 
     return jsonify(contracts_list), 200
@@ -431,6 +434,7 @@ def get_contract(contract_id):
         'contract_date': contract.contract_date_db,
         'end_date': contract.end_date_db,
         'auto_prolongation': contract.auto_prolongation_db,
+        'archival-contracts': contract.archival_contracts_db,
         'user': contract.user_db,
         'contract_type': contract.contract_type_db,
         'contract_stage': contract.contract_stage_db,
@@ -509,6 +513,7 @@ def update_contract(contract_id):
     contract.contract_date_db = data.get('contract-date')
     contract.end_date_db = data.get('end-date')
     contract.auto_prolongation_db = True if data.get('auto-prolongation') else False
+    contract.archival_contracts_db = True if data.get('archival-contracts') else False
     contract.contract_type_db = data.get('contract-type')
     contract.contract_stage_db = data.get('contract-stage')
     contract.funds_type_db = data.get('funds-type')

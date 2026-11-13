@@ -457,6 +457,15 @@ document.addEventListener('DOMContentLoaded', () => {
     })
     // -----------------------------------------------------------------------------------------------
 
+    // НОВИЙ ОБРОБНИК: Кнопка швидкого додавання контрагента всередині форми створення/редагування договору
+    const btnQuickAddCounterparty = document.getElementById('btn-quick-add-counterparty');
+    if (btnQuickAddCounterparty) {
+        btnQuickAddCounterparty.addEventListener('click', () => {
+            openAddCounterpartyModal();
+        });
+    }
+    // -----------------------------------------------------------------------------------------------------------
+
     // 4.3. Функція закриття модального вікна Контрагенти
     function closeAddCounterpartyModal() {
         modalAddCounterparty.close();
@@ -580,6 +589,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Закриваємо модальне вікно додавання контрагента
 
                 await loadCounterparties();
+
+                // оновлюємо випадаючий список у формі договору миттєво після швидкого додавання контрагента
+                await updateCounterpartiesDatalist();
             }
         });
         // Закриваємо асинхронну функцію-обробник події кліку
@@ -607,6 +619,28 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     // ---------------------------------------------------------------------------------------------------
+
+    // 4.8.1. Функція автоматичного оновлення <datalist> у формі договору без перезавантаження
+    async function updateCounterpartiesDatalist() {
+        try {
+            const response = await fetch('/api/counterparties');
+            if (!response.ok) return;
+            const counterparties = await response.json();
+
+            const counterpartiesList = document.getElementById('counterparties-list');
+            if (counterpartiesList) {
+                let optionsHtml = '';
+                counterparties.forEach(i => {
+                    const safeName = (i.counterparty_name || '').replace(/"/g, '"');
+                    optionsHtml += `<option value="${safeName}">`;
+                });
+                counterpartiesList.innerHTML = optionsHtml;
+            }
+        } catch (error) {
+            console.error('Помилка оновлення списку контрагентів для форми договору:', error);
+        }
+    }
+    // -------------------------------------------------------------------------------------------------------
 
 
     // 4.9. Функція відображення списку контрагентів у вигляді таблиці
@@ -991,18 +1025,67 @@ document.addEventListener('DOMContentLoaded', () => {
         const userSelect = document.getElementById('filter-contract-user'); // Отримуємо селект користувача
         const selectedUser = userSelect ? userSelect.value : ''; // Оголошуємо змінну
 
+        // Отримуємо стан чекбокса «Показувати архівні» над таблицею
+        const archiveCheckbox = document.getElementById('filter-contract-archive');
+        const showArchived = archiveCheckbox ? archiveCheckbox.checked : false;
 
-        let filtered = contractsCacheList; // По замовчуванню беремо всі договори з кешу
+        // Отримуємо текст із поля пошуку
+        const searchInput = document.getElementById('filter-contract-search');
+        const searchText = searchInput ? searchInput.value.toLowerCase().trim() : '';
 
-        // Фільтруємо за статусом (якщо вибрано)
+        // Елемент для виведення кількості архівних
+        const countBadge = document.getElementById('archived-count-badge');
+
+        // 1. Спочатку застосовуємо базові фільтри (статус та користувач) на весь кеш, 
+        // щоб порахувати, скільки записів підпадає під них незалежно від архіву
+        let baseFiltered = contractsCacheList;
+
         if (selectedStage) {
-            filtered = filtered.filter(i => i.contract_stage === selectedStage);
+            baseFiltered = baseFiltered.filter(i => i.contract_stage === selectedStage);
         }
 
-        // Фільтруємо за користувачем (якщо вибрано)
         if (selectedUser) {
-            filtered = filtered.filter(i => i.user === selectedUser);
+            baseFiltered = baseFiltered.filter(i => i.user === selectedUser);
         }
+
+        // 2. Рахуємо, скільки серед цих відфільтрованих записів є архівними
+        const archivedCount = baseFiltered.filter(i => i.is_archived).length;
+
+        // 3. Керуємо відображенням лічильника біля чекбокса
+        if (countBadge) {
+            if (!showArchived && archivedCount > 0) {
+                countBadge.textContent = `(в архіві приховано: ${archivedCount})`;
+                countBadge.style.display = 'inline';
+            } else {
+                countBadge.textContent = '';
+                countBadge.style.display = 'none';
+            }
+        }
+
+        // 4. Формуємо фінальний список для відображення в таблиці (з урахуванням галочки архіву)
+        let filtered = baseFiltered;
+        if (!showArchived) {
+            filtered = filtered.filter(i => !i.is_archived);
+        }
+
+        // 5. ЗУХВАЛИЙ ПОШУК: якщо введено текст, фільтруємо отриманий список по всіх полях договору
+        if (searchText) {
+            filtered = filtered.filter(i => {
+                // Перевіряємо всі можливі поля договору на наявність тексту пошуку
+                return (
+                    (i.reg_number && i.reg_number.toLowerCase().includes(searchText)) ||
+                    (i.agreement_number && i.agreement_number.toLowerCase().includes(searchText)) ||
+                    (i.contract_number && i.contract_number.toLowerCase().includes(searchText)) ||
+                    (i.counterparty_1 && i.counterparty_1.toLowerCase().includes(searchText)) ||
+                    (i.counterparty_2 && i.counterparty_2.toLowerCase().includes(searchText)) ||
+                    (i.contract_date && i.contract_date.toLowerCase().includes(searchText)) ||
+                    (i.end_date && i.end_date.toLowerCase().includes(searchText)) ||
+                    (i.contract_stage && i.contract_stage.toLowerCase().includes(searchText)) ||
+                    (i.user && i.user.toLowerCase().includes(searchText))
+                );
+            });
+        }
+
         renderContracts(filtered); // Передаємо відфільтрований список у таблицю
     }
     // -----------------------------------------------------------------------------------------------
@@ -1054,6 +1137,56 @@ document.addEventListener('DOMContentLoaded', () => {
             applyContractFilter();
         });
     }
+    // -------------------------------------------------------------------------------------------------
+
+    // Слухач події для чекбокса архіву над таблицею
+    const filterArchiveCheckbox = document.getElementById('filter-contract-archive');
+    if (filterArchiveCheckbox) {
+        filterArchiveCheckbox.addEventListener('change', () => {
+            applyContractFilter();
+        });
+    }
+    // ----------------------------------------------------------------------------------------------------
+
+    // Слухач події введення тексту у поле пошуку договорів
+    const filterContractSearchInput = document.getElementById('filter-contract-search');
+    if (filterContractSearchInput) {
+        filterContractSearchInput.addEventListener('input', () => {
+            applyContractFilter();
+        });
+    }
+    // ------------------------------------------------------------------------------------------------------
+
+
+    // Чітке та контрольоване скидання конкретних фільтрів
+    function resetAllContractFilters() {
+        // Явно знаходимо кожен фільтр за його унікальним ID
+        const filterStage = document.getElementById('filter-contract-stage');
+        const filterUser = document.getElementById('filter-contract-user');
+
+        // Скидаємо фільтр за статусом
+        if (filterStage) {
+            filterStage.value = '';
+        }
+
+        // Скидаємо фільтр за користувачем
+        if (filterUser) {
+            filterUser.value = '';
+        }
+
+        // Запускаємо оновлення таблиці
+        applyContractFilter();
+    }
+    // ---------------------------------------------------------------------------------------------------
+
+    // Підключаємо слухач події на кнопку скидання
+    const btnResetFilters = document.getElementById('btn-reset-filters');
+    if (btnResetFilters) {
+        btnResetFilters.addEventListener('click', () => {
+            resetAllContractFilters();
+        });
+    }
+    // ------------------------------------------------------------------------------------------------
 
     // 5.10. Функція відображення списку договорів у вигляді таблиці
     function renderContracts(contracts) {
@@ -1079,6 +1212,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <tr>
                     <th>ID</th>
                     <th>Реєстр. ном. дог. БР</th>
+                    <th>Номер угоди</th>
                     <th>Номер договору</th>
                     <th>Контрагент 1</th>
                     <th>Контрагент 2</th>
@@ -1104,6 +1238,7 @@ document.addEventListener('DOMContentLoaded', () => {
             row.innerHTML = `
                 <td>${i.id}</td>
                 <td>${i.reg_number || ''}</td>
+                <td>${i.agreement_number || ''}</td>
                 <td>${i.contract_number || ''}</td>
                 <td>${i.counterparty_1 || ''}</td>
                 <td>${i.counterparty_2 || ''}</td>
@@ -1158,6 +1293,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('contract-date').value = contract.contract_date || '';
             document.getElementById('end-date').value = contract.end_date || '';
             document.getElementById('auto-prolongation').checked = contract.auto_prolongation || false;
+            document.getElementById('archival-contracts').checked = contract.is_archived || false;
             document.getElementById('contract-user').value = contract.user || '';
             document.getElementById('contract-type').value = contract.contract_type || '';
             document.getElementById('contract-stage').value = contract.contract_stage || '';

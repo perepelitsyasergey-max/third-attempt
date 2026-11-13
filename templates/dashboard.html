@@ -32,23 +32,46 @@
     <div id="tab-contracts" class="tab-content">
       <h2>Договори</h2>
       <button id="btn-open-modal-contract">Додати договір</button>
-      <div>
-        <label for="filter-contract-stage"><strong>Фільтр за статусом:</strong></label>
-        <select id="filter-contract-stage" style="padding: 5px;">
-          <option value="">Усі статуси</option>
-          <option value="concluding">Укладання</option>
-          <option value="active">Діючий</option>
-          <option value="without_support">Діючий (без супроводу)</option>
-          <option value="completed">Завершений</option>
-        </select>
+
+      <!-- Панель фільтрів -->
+      <div id="filter-panel">
+        <div>
+          <label for="filter-contract-stage"><strong>Фільтр за статусом:</strong></label>
+          <select id="filter-contract-stage" style="padding: 5px;">
+            <option value="">Усі статуси</option>
+            <option value="concluding">Укладання</option>
+            <option value="active">Діючий</option>
+            <option value="without_support">Діючий (без супроводу)</option>
+            <option value="completed">Завершений</option>
+          </select>
+        </div>
+        <div>
+          <label for="filter-contract-user"><strong>Фільтр за користувачем:</strong></label>
+          <select id="filter-contract-user" style="padding: 5px;">
+            <option value="">Усі користувачі</option>
+            <!-- Динамічні опції сформуються через JavaScript -->
+          </select>
+        </div>
+        <!-- Кнопка скидання фільтрів -->
+        <div>
+          <button type="button" id="btn-reset-filters" style="padding: 5px 10px; cursor: pointer;">Скинути
+            фільтри</button>
+        </div>
+
+        <!-- Архів договорів -->
+        <div>
+          <label>
+            <input type="checkbox" id="filter-contract-archive"> Показувати архівні договори
+          </label>
+          <span id="archived-count-badge"></span>
+        </div>
+        <!-- Пошук -->
+        <div>
+          <input type="text" id="filter-contract-search" placeholder="Пошук по договорах..."
+            style="padding: 5px; width: 200px;">
+        </div>
       </div>
-      <div>
-        <label for="filter-contract-user"><strong>Фільтр за користувачем:</strong></label>
-        <select id="filter-contract-user" style="padding: 5px;">
-          <option value="">Усі користувачі</option>
-          <!-- Динамічні опції сформуються через JavaScript -->
-        </select>
-      </div>
+
       <div id="contracts-list-container"></div>
     </div>
     <div id="tab-counterparties" class="tab-content">
@@ -146,13 +169,13 @@
 
 
             <!-- Номер угоди -->
-            <div id="box-contract-number">
+            <div id="box-agreement-number">
               <label for="agreement-number">Номер угоди</label>
               <input type="text" name="agreement-number" id="agreement-number" class="input-field" />
             </div>
 
             <!-- Номер договору -->
-            <div id="box-">
+            <div id="box-contract-number">
               <label for="contract-number">Номер дог.</label>
               <input type="text" name="contract-number" id="contract-number" class="input-field" />
             </div>
@@ -176,6 +199,15 @@
               </datalist>
             </div>
 
+            <!-- Замість пустого місця або в 5-й колонці 1-го рядка -->
+            <div id="box-add-counterparty-btn"
+              style="grid-column: 5; grid-row: 1; display: flex; align-items: flex-end;">
+              <button type="button" id="btn-quick-add-counterparty"
+                style="padding: 6px 10px; cursor: pointer; background-color: #17a2b8; color: white; border: none; border-radius: 4px; font-size: 12px; width: 100%;">
+                + Додати контрагента
+              </button>
+            </div>
+
 
             <!-- Дата договору -->
             <div id="box-contract-date">
@@ -191,9 +223,15 @@
 
 
             <!-- Автопролонгація договору -->
-            <div id="box-" class="checkbox-container">
+            <div id="box-auto-prolongation" class="checkbox-container">
               <label for="auto-prolongation">Автопролонгація договору</label>
               <input type="checkbox" name="auto-prolongation" id="auto-prolongation" />
+            </div>
+
+            <!-- Архівні договорів -->
+            <div id="box-archival-contracts" class="checkbox-container">
+              <label for="archival-contracts">Архів</label>
+              <input type="checkbox" name="archival-contracts" id="archival-contracts" />
             </div>
 
             <!-- Користувач -->

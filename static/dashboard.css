@@ -37,6 +37,18 @@
 /* Вкладка Договори */
 /* =================================================================================================== */
 
+/* Панель фільтрів */
+#filter-panel {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    /* Відстань між елементами */
+    flex-wrap: wrap;
+    /* Щоб на менших екранах елементи акуратно переносилися на новий рядок */
+    margin-bottom: 15px;
+}
+
+
 /* 1. Робимо модальне вікно договору ширшим, щоб зручно вмістити дві колонки */
 #modal-add-contract {
     width: 90%;
@@ -97,9 +109,14 @@
     grid-row: 1;
 }
 
-#box-contract-stage {
+#box-add-counterparty-btn {
     grid-column: 5;
     grid-row: 1;
+}
+
+#box-contract-stage {
+    grid-column: 5;
+    grid-row: 2;
 }
 
 
@@ -111,7 +128,7 @@
 
 #box-contract-number {
     grid-column: 2;
-    grid-row: 3;
+    grid-row: 2;
 }
 
 #box-contract-date {
@@ -125,18 +142,26 @@
 }
 
 /* Автопролонгація (у тебе в HTML блок має id="") */
-.checkbox-container {
+#box-auto-prolongation {
     grid-column: 5;
-    grid-row: 2;
+    grid-row: 3;
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
 }
 
+/* Автопролонгація (у тебе в HTML блок має id="") */
+#box-archival-contracts {
+    grid-column: 4;
+    grid-row: 3;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+}
 
 /* Рядок 3 */
 #box-agreement-number {
-    grid-column: 1;
+    grid-column: 2;
     grid-row: 3;
 }
 
