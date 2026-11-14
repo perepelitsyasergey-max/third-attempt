@@ -1328,6 +1328,14 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        // 1. Допоміжна функція для форматування грошових сум (наприклад: 12500.5 -> 12 500,50)
+        const formatMoney = (val) => {
+            return (parseFloat(val) || 0).toLocaleString('uk-UA', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        };
+
         // ДОДАЄМО СЛОВНИК
         const stageTranslations = {
             "concluding": "Укладання",
@@ -1349,6 +1357,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     <th>Дата дог.</th>
                     <th>Дата закінчення</th>
                     <th>Статус</th>
+                    <th>Валюта</th>
+                    <th>Сума договору</th>
+                    <th>Оплачено</th>
+                    <th>Відвантажено</th>
                     <th>Користувач</th>
                     <th>Дії</th>
                     <th>Видалити</th>
@@ -1375,6 +1387,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td>${formatDateUA(i.contract_date) || ''}</td>
                 <td>${formatDateUA(i.end_date) || ''}</td>
                 <td>${displayStage}</td> <!-- ВИВЕДЕННЯ ПЕРЕКЛАДЕНОГО СТАТУСУ -->
+                <td>${i.currency || 'UAH'}</td>
+                <td>${formatMoney(i.total_amount)}</td>
+                <td>${formatMoney(i.paid_amount)}</td>
+                <td>${formatMoney(i.shipped_amount)}</td>
                 <td>${i.user || ''}</td>
                 <td>
                     <button class="btn-edit-contract" data-id="${i.id}">Редагувати</button>

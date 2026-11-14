@@ -389,30 +389,71 @@ def create_contract():
 # Отримання списку всіх договорів (API)
 @app.route('/api/contracts', methods=['GET'])
 def get_contracts():
-    contracts = Contract.query.all()
-    contracts_list = []
+    try:
+        contracts = Contract.query.all()
+        contracts_list = []
 
-    for i in contracts:
-        # ЗАХИСНИЙ МЕХАНІЗМ: якщо номер відсутній у базі (старі записи), формуємо його на льоту за ID
-        reg_number_with_value = i.reg_number_contract_db
-        if not reg_number_with_value:
-            reg_number_with_value = f"БР-{i.id}/26"
-        contracts_list.append({
-            'id': i.id,
-            'reg_number': reg_number_with_value,
-            'agreement_number': i.agreement_number_db,
-            'contract_number': i.contract_number_db,
-            'counterparty_1': i.counterparty_1_db,
-            'counterparty_2': i.counterparty_2_db,
-            'contract_date': i.contract_date_db,
-            'end_date': i.end_date_db,
-            'end_date': i.end_date_db,
-            'contract_stage': i.contract_stage_db,
-            'user': i.user_db,
-            'is_archived': i.archival_contracts_db
-        })
+        for i in contracts:
+            # ЗАХИСНИЙ МЕХАНІЗМ: якщо номер відсутній у базі (старі записи), формуємо його на льоту за ID
+            reg_number_with_value = i.reg_number_contract_db
+            if not reg_number_with_value:
+                reg_number_with_value = f"БР-{i.id}/26"
 
-    return jsonify(contracts_list), 200
+            # --- ЗБИРАЄМО ФІНАНСОВІ ДАНІ ТА ВАЛЮТУ ЗІ СПЕЦИФІКАЦІЙ ЦЬОГО ДОГОВОРУ ---
+            
+            # Знаходимо всі специфікації, які належать до поточного договору
+            specs = Specification.query.filter_by(contract_id=i.id).all()
+            
+            total_contract_amount = 0  # Загальна сума договору
+            total_paid_amount = 0      # Загальна сума оплат
+            total_shipped_amount = 0   # Загальна сума відвантажень
+            currencies = set()         # Використовуємо Set (множину), щоб уникнути дублікатів валют
+
+            for spec in specs:
+                # Зберігаємо валюту специфікації, якщо вона вказана
+                if spec.spec_currency_db:
+                    currencies.add(spec.spec_currency_db)
+                
+                # Знаходимо всі товари (рядки) всередині цієї специфікації
+                items = SpecificationItem.query.filter_by(specification_id=spec.id).all()
+                
+                # Рахуємо суму специфікації у рідній валюті (Кількість × Ціна за одиницю)
+                spec_native_total = sum(float(item.product_qty_db or 0) * float(item.product_price_db or 0) for item in items)
+                total_contract_amount += spec_native_total
+
+                # Підсумовуємо оплати та відвантаження по всіх рядках товарів
+                for item in items:
+                    records = PaymentShippingRecord.query.filter_by(item_id=item.id).all()
+                    total_paid_amount += sum(float(r.pay_sum_db or 0) for r in records)
+                    total_shipped_amount += sum(float(r.ship_sum_db or 0) for r in records)
+
+            # Перетворюємо множину валют у зручний рядок (наприклад, "UAH" або "USD, EUR")
+            currency_str = ", ".join(currencies) if currencies else "UAH"
+
+            # Формуємо фінальний об'єкт договору для передачі на фронтенд
+            contracts_list.append({
+                'id': i.id,
+                'reg_number': reg_number_with_value,
+                'agreement_number': i.agreement_number_db,
+                'contract_number': i.contract_number_db,
+                'counterparty_1': i.counterparty_1_db,
+                'counterparty_2': i.counterparty_2_db,
+                'contract_date': i.contract_date_db,
+                'end_date': i.end_date_db,
+                'contract_stage': i.contract_stage_db,
+                'user': i.user_db,
+                'is_archived': i.archival_contracts_db,
+                # Нові фінансові поля для відображення в таблиці договорів:
+                'currency': currency_str,
+                'total_amount': total_contract_amount,
+                'paid_amount': total_paid_amount,
+                'shipped_amount': total_shipped_amount
+            })
+
+        return jsonify(contracts_list), 200
+    except Exception as e:
+        print(f"ПОМИЛКА У GET_CONTRACTS: {str(e)}")
+        return jsonify({'error': str(e)}), 500
 # --------------------------------------------------------------------------------------------------------
 
 # Отримання даних одного договору за ID (API)
@@ -532,10 +573,32 @@ def delete_contract(contract_id):
     if not contract:
         return jsonify({'error': 'Договір не знайдено'}), 404
 
-    db.session.delete(contract)
-    db.session.commit()
+    try:
+        # 1. Знаходимо всі специфікації цього договору
+        specs = Specification.query.filter_by(contract_id=contract.id).all()
+        for spec in specs:
+            # 2. Знаходимо всі товари (items) цієї специфікації
+            items = SpecificationItem.query.filter_by(specification_id=spec.id).all()
+            for item in items:
+                # 3. Видаляємо записи оплат та відвантажень для кожного товару
+                PaymentShippingRecord.query.filter_by(item_id=item.id).delete()
+            
+            # 4. Видаляємо товари специфікації
+            SpecificationItem.query.filter_by(specification_id=spec.id).delete()
+        
+        # 5. Видаляємо самі специфікації договору
+        Specification.query.filter_by(contract_id=contract.id).delete()
 
-    return jsonify({'message': 'Договір успішно видалено'}), 200
+        # 6. Тепер, коли все дочірнє сміття видалено, сміливо видаляємо сам договір
+        db.System = db.session.delete(contract) # або просто db.session.delete(contract)
+        db.session.delete(contract)
+        db.session.commit()
+
+        return jsonify({'message': 'Договір та всі пов’язані специфікації успішно видалено'}), 200
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
 # -----------------------------------------------------------------------------------------------------------
 
 # Отримання списку специфікацій для конкретного договору (API)
