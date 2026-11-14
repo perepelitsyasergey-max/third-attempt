@@ -495,6 +495,15 @@ def create_specification(contract_id):
     # Перевіряємо, чи існує такий договір у базі
     contract = Contract.query.get_or_404(contract_id)
 
+    # ЗАПОБІЖНИК: Перевіряємо валюту існуючих специфікацій цього договору
+    new_currency = data.get('spec-currency')    
+    existing_specs = Specification.query.filter_by(contract_id=contract.id).all()
+    for spec in existing_specs:
+        if spec.spec_currency_db and spec.spec_currency_db != new_currency:
+            return jsonify({
+                'error': f"Неможливо створити специфікацію в іншій валюті ({new_currency}). Усі специфікації цього договору мають бути в єдиній валюті: {spec.spec_currency_db}."
+            }), 400
+
     # 1. Створюємо та зберігаємо головну специфікацію
     new_spec = Specification(
         contract_id=contract.id,
@@ -713,6 +722,18 @@ def update_specification(spec_id):
 
     if not data:
         return jsonify({'error': "Дані відсутні"}), 400
+
+    
+    # ЗАПОБІЖНИК: Перевіряємо валюту інших специфікацій цього ж договору
+    new_currency = data.get('spec-currency')    
+    existing_specs = Specification.query.filter_by(contract_id=spec.contract_id).all()
+    for existing_spec in existing_specs:
+        # Пропускаємо поточну специфікацію, яку редагуємо
+        if existing_spec.id != spec.id and existing_spec.spec_currency_db:
+            if existing_spec.spec_currency_db != new_currency:
+                return jsonify({
+                    'error': f"Неможливо змінити валюту на {new_currency}. Інші специфікації цього договору використовують валюту: {existing_spec.spec_currency_db}."
+                }), 400
 
     # Оновлюємо загальні поля специфікації    
     spec.spec_number_db = data.get('spec-number')

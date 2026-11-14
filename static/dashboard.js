@@ -1022,56 +1022,35 @@ document.addEventListener('DOMContentLoaded', () => {
         const filterSelect = document.getElementById('filter-contract-stage');
         const selectedStage = filterSelect ? filterSelect.value : '';
 
-        const userSelect = document.getElementById('filter-contract-user'); // Отримуємо селект користувача
-        const selectedUser = userSelect ? userSelect.value : ''; // Оголошуємо змінну
+        const userSelect = document.getElementById('filter-contract-user');
+        const selectedUser = userSelect ? userSelect.value : '';
 
         // Отримуємо стан чекбокса «Показувати архівні» над таблицею
         const archiveCheckbox = document.getElementById('filter-contract-archive');
         const showArchived = archiveCheckbox ? archiveCheckbox.checked : false;
 
         // Отримуємо текст із поля пошуку
-        const searchInput = document.getElementById('filter-contract-search');
-        const searchText = searchInput ? searchInput.value.toLowerCase().trim() : '';
+        const searchText = document.getElementById('filter-contract-search')?.value.toLowerCase().trim() || '';
 
         // Елемент для виведення кількості архівних
         const countBadge = document.getElementById('archived-count-badge');
 
-        // 1. Спочатку застосовуємо базові фільтри (статус та користувач) на весь кеш, 
-        // щоб порахувати, скільки записів підпадає під них незалежно від архіву
-        let baseFiltered = contractsCacheList;
+        // 1. Починаємо з повного кешу договорів
+        let filtered = contractsCacheList;
 
+        // 2. Фільтр за станом (stage)
         if (selectedStage) {
-            baseFiltered = baseFiltered.filter(i => i.contract_stage === selectedStage);
+            filtered = filtered.filter(i => i.contract_stage === selectedStage);
         }
 
+        // 3. Фільтр за користувачем
         if (selectedUser) {
-            baseFiltered = baseFiltered.filter(i => i.user === selectedUser);
+            filtered = filtered.filter(i => i.user === selectedUser);
         }
 
-        // 2. Рахуємо, скільки серед цих відфільтрованих записів є архівними
-        const archivedCount = baseFiltered.filter(i => i.is_archived).length;
-
-        // 3. Керуємо відображенням лічильника біля чекбокса
-        if (countBadge) {
-            if (!showArchived && archivedCount > 0) {
-                countBadge.textContent = `(${archivedCount} дог.)`;
-                countBadge.style.display = 'inline';
-            } else {
-                countBadge.textContent = '';
-                countBadge.style.display = 'none';
-            }
-        }
-
-        // 4. Формуємо фінальний список для відображення в таблиці (з урахуванням галочки архіву)
-        let filtered = baseFiltered;
-        if (!showArchived) {
-            filtered = filtered.filter(i => !i.is_archived);
-        }
-
-        // 5. ЗУХВАЛИЙ ПОШУК: якщо введено текст, фільтруємо отриманий список по всіх полях договору
+        // 4. Пошук за текстом (по всіх полях)
         if (searchText) {
             filtered = filtered.filter(i => {
-                // Перевіряємо всі можливі поля договору на наявність тексту пошуку
                 return (
                     (i.reg_number && i.reg_number.toLowerCase().includes(searchText)) ||
                     (i.agreement_number && i.agreement_number.toLowerCase().includes(searchText)) ||
@@ -1086,58 +1065,18 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        
-        // 6. ДОДАЄМО СОРТУВАННЯ ЗА ДАТОЮ ЗАКІНЧЕННЯ
-        
-        const sortSelect = document.getElementById('sort-contracts-end-date');
-        const sortValue = sortSelect ? sortSelect.value : '';
-
-        if (sortValue) {
-            filtered.sort((a, b) => {
-                // Якщо у договору немає дати закінчення, ставимо його в кінець
-                const dateA = a.end_date ? new Date(a.end_date) : (sortValue === 'asc' ? new Date('9999-12-31') : new Date('1970-01-01'));
-                const dateB = b.end_date ? new Date(b.end_date) : (sortValue === 'asc' ? new Date('9999-12-31') : new Date('1970-01-01'));
-
-                if (sortValue === 'asc') {
-                    return dateA - dateB; // Спочатку найближчі (від меншої дати до більшої)
-                } else {
-                    return dateB - dateA; // Спочатку найдальші (від більшої дати до меншої)
-                }
-            });
-        }
-
-        // 7. Сортування за датою договору (contract_date)
-        const sortDateSelect = document.getElementById('sort-contracts-date');
-        const sortDateValue = sortDateSelect ? sortDateSelect.value : '';
-
-        if (sortDateValue) {
-            filtered.sort((a, b) => {
-                const dateA = a.contract_date ? new Date(a.contract_date) : (sortDateValue === 'asc' ? new Date('9999-12-31') : new Date('1970-01-01'));
-                const dateB = b.contract_date ? new Date(b.contract_date) : (sortDateValue === 'asc' ? new Date('9999-12-31') : new Date('1970-01-01'));
-
-                if (sortDateValue === 'asc') {
-                    return dateA - dateB; // Від найстаріших до новіших
-                } else {
-                    return dateB - dateA; // Від найновіших до старіших
-                }
-            });
-        }
-
-        // 8. ФІЛЬТРАЦІЯ ЗА ПЕРІОДОМ ДАТ
+        // 5. Фільтрація за періодом дат
         const contractDateFrom = document.getElementById('filter-contract-date-from')?.value;
         const contractDateTo = document.getElementById('filter-contract-date-to')?.value;
         const endDateFrom = document.getElementById('filter-end-date-from')?.value;
         const endDateTo = document.getElementById('filter-end-date-to')?.value;
 
-        // Фільтр по даті укладання договору (включно з межами періоду)
         if (contractDateFrom) {
             filtered = filtered.filter(i => i.contract_date && i.contract_date >= contractDateFrom);
         }
         if (contractDateTo) {
             filtered = filtered.filter(i => i.contract_date && i.contract_date <= contractDateTo);
         }
-
-        // Фільтр по даті завершення договору (включно з межами періоду)
         if (endDateFrom) {
             filtered = filtered.filter(i => i.end_date && i.end_date >= endDateFrom);
         }
@@ -1145,7 +1084,61 @@ document.addEventListener('DOMContentLoaded', () => {
             filtered = filtered.filter(i => i.end_date && i.end_date <= endDateTo);
         }
 
-        renderContracts(filtered); // Передаємо відфільтрований список у таблицю
+        // 6. РАХУЄМО КІЛЬКІСТЬ АРХІВНИХ ТІЛЬКИ З ПОВНІСТЮ ВІДФІЛЬТРОВАНОГО СПИСКУ
+        const archivedCount = filtered.filter(i => i.is_archived).length;
+
+        // 7. Керуємо відображенням лічильника біля чекбокса
+        if (countBadge) {
+            if (!showArchived && archivedCount > 0) {
+                countBadge.textContent = `(${archivedCount} дог.)`;
+                countBadge.style.display = 'inline';
+            } else {
+                countBadge.textContent = '';
+                countBadge.style.display = 'none';
+            }
+        }
+
+        // 8. Відсікаємо або залишаємо архівні залежно від галочки «Архів» для таблиці
+        let displayList = filtered;
+        if (!showArchived) {
+            displayList = displayList.filter(i => !i.is_archived);
+        }
+
+        // 9. Сортування за датою закінчення
+        const sortSelect = document.getElementById('sort-contracts-end-date');
+        const sortValue = sortSelect ? sortSelect.value : '';
+
+        if (sortValue) {
+            displayList.sort((a, b) => {
+                const dateA = a.end_date ? new Date(a.end_date) : (sortValue === 'asc' ? new Date('9999-12-31') : new Date('1970-01-01'));
+                const dateB = b.end_date ? new Date(b.end_date) : (sortValue === 'asc' ? new Date('9999-12-31') : new Date('1970-01-01'));
+
+                if (sortValue === 'asc') {
+                    return dateA - dateB;
+                } else {
+                    return dateB - dateA;
+                }
+            });
+        }
+
+        // 10. Сортування за датою договору
+        const sortDateSelect = document.getElementById('sort-contracts-date');
+        const sortDateValue = sortDateSelect ? sortDateSelect.value : '';
+
+        if (sortDateValue) {
+            displayList.sort((a, b) => {
+                const dateA = a.contract_date ? new Date(a.contract_date) : (sortDateValue === 'asc' ? new Date('9999-12-31') : new Date('1970-01-01'));
+                const dateB = b.contract_date ? new Date(b.contract_date) : (sortDateValue === 'asc' ? new Date('9999-12-31') : new Date('1970-01-01'));
+
+                if (sortDateValue === 'asc') {
+                    return dateA - dateB;
+                } else {
+                    return dateB - dateA;
+                }
+            });
+        }
+
+        renderContracts(displayList); // Рендеримо фінальний список у таблицю
     }
     // -----------------------------------------------------------------------------------------------
 
