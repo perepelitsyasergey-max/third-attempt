@@ -147,6 +147,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let productsCache = [];
     // КЕШ ДЛЯ ДОГОВОРІВ. Використовуєтьсч
     let contractsCacheList = [];
+    let currentFilteredContracts = [];
 
     // ===========================================================================================
     // 2. ПЕРЕМИКАННЯ ВКЛАДОК
@@ -1138,6 +1139,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
+        currentFilteredContracts = displayList; // Зберігаємо для експорту в Excel
         renderContracts(displayList); // Рендеримо фінальний список у таблицю
     }
     // -----------------------------------------------------------------------------------------------
@@ -2495,6 +2497,60 @@ document.addEventListener('DOMContentLoaded', () => {
             modalPayShip.close();
         });
     }
+    // --------------------------------------------------------------------------------------------------------------
+
+    // Функція експорту відфільтрованих договорів в Excel
+    function exportContractsToExcel() {
+        if (!currentFilteredContracts || currentFilteredContracts.length === 0) {
+            alert('Немає даних для експорту!');
+            return;
+        }
+
+        // Формуємо масив даних для Excel з гарними назвами колонок українською
+        const excelData = currentFilteredContracts.map((i, index) => {
+            const stageTranslations = {
+                "concluding": "Укладання",
+                "active": "Діючий",
+                "without_support": "Діючий (без супроводу)",
+                "completed": "Завершений"
+            };
+            const displayStage = stageTranslations[i.contract_stage] || i.contract_stage || '';
+
+            return {
+                "№": index + 1,
+                "ID": i.id || '',
+                "Реєстр. ном. дог. БР": i.reg_number || '',
+                "Номер угоди": i.agreement_number || '',
+                "Номер договору": i.contract_number || '',
+                "Контрагент 1": i.counterparty_1 || '',
+                "Контрагент 2": i.counterparty_2 || '',
+                "Дата дог.": formatDateUA(i.contract_date) || '',
+                "Дата закінчення": formatDateUA(i.end_date) || '',
+                "Статус": displayStage,
+                "Валюта": i.currency || 'UAH',
+                "Сума договору": parseFloat(i.total_amount) || 0,
+                "Оплачено": parseFloat(i.paid_amount) || 0,
+                "Відвантажено": parseFloat(i.shipped_amount) || 0,
+                "Користувач": i.user || ''
+            };
+        });
+
+        // Створюємо робочу книгу (Workbook) та аркуш (Worksheet) через SheetJS
+        const worksheet = XLSX.utils.json_to_sheet(excelData);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Договори");
+
+        // Генеруємо файл та запускаємо завантаження
+        XLSX.writeFile(workbook, "Contracts_Report.xlsx");
+    }
+    // ---------------------------------------------------------------------------------------------------------
+
+    // Прив'язуємо подію кліку до кнопки експорту напряму
+    const exportBtn = document.getElementById('btn-export-excel');
+    if (exportBtn) {
+        exportBtn.addEventListener('click', exportContractsToExcel);
+    }
+    // ------------------------------------------------------------------------------------------------------------
 
 
 

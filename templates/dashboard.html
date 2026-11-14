@@ -8,6 +8,8 @@
       rel="stylesheet"
       href="{{ url_for('static', filename='dashboard.css') }}"
     />
+    <!-- ДОДАЄМО БІБЛІОТЕКУ ДЛЯ ЕКСПОРТУ В EXCEL -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   </head>
 
   <body>
@@ -124,6 +126,21 @@
               Скинути фільтри
             </button>
           </div>
+
+          <button
+            id="btn-export-excel"
+            style="
+              background-color: #28a745;
+              color: white;
+              border: none;
+              padding: 6px 12px;
+              border-radius: 4px;
+              cursor: pointer;
+              font-weight: bold;
+            "
+          >
+            📊 Експорт в Excel
+          </button>
 
           <!-- Архів договорів -->
           <div>
