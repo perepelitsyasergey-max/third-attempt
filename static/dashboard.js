@@ -1310,6 +1310,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         return dateString; // Повертаємо як є, якщо формат інший
     }
+    // -----------------------------------------------------------------------------------------------------
 
     // 5.10. Функція відображення списку договорів у вигляді таблиці
     function renderContracts(contracts) {
@@ -1360,6 +1361,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </tr>
             </thead>
             <tbody></tbody>
+            
         `;
 
         const tbody = table.querySelector('tbody');
@@ -1398,8 +1400,61 @@ document.addEventListener('DOMContentLoaded', () => {
         container.appendChild(table);
         attachEditContractEvents(container);
         attachDeleteContractEvents(container);
+
+        // ВИКЛИКАЄМО ФУНКЦІЮ ПІДРАХУНКУ ПІДСУМКІВ ОДРАЗУ ПІСЛЯ РЕНДЕРУ
+        calculateTableTotals(contracts);
     }
     // -------------------------------------------------------------------------------------------------------
+
+        // 5.10.1 Функція підрахунку та виведення підсумків у верхні картки-віджети
+    function calculateTableTotals(contracts) {
+        const totals = {
+            'UAH': { total: 0, paid: 0, shipped: 0 },
+            'USD': { total: 0, paid: 0, shipped: 0 },
+            'EUR': { total: 0, paid: 0, shipped: 0 }
+        };
+
+        contracts.forEach(i => {
+            const curr = (i.currency || 'UAH').toUpperCase();
+            if (totals[curr]) {
+                totals[curr].total += Number(i.total_amount || 0);
+                totals[curr].paid += Number(i.paid_amount || 0);
+                totals[curr].shipped += Number(i.shipped_amount || 0);
+            }
+        });
+
+        const formatMoney = (val) => {
+            return (parseFloat(val) || 0).toLocaleString('uk-UA', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        };
+
+        // Загальна кількість
+        document.getElementById('summary-count').textContent = contracts.length;
+
+        // UAH
+        document.getElementById('uah-total').textContent = formatMoney(totals.UAH.total);
+        document.getElementById('uah-paid').textContent = formatMoney(totals.UAH.paid);
+        document.getElementById('uah-shipped').textContent = formatMoney(totals.UAH.shipped);
+        document.getElementById('uah-unpaid').textContent = formatMoney(totals.UAH.total - totals.UAH.paid);
+        document.getElementById('uah-unshipped').textContent = formatMoney(totals.UAH.total - totals.UAH.shipped);
+
+        // USD
+        document.getElementById('usd-total').textContent = formatMoney(totals.USD.total);
+        document.getElementById('usd-paid').textContent = formatMoney(totals.USD.paid);
+        document.getElementById('usd-shipped').textContent = formatMoney(totals.USD.shipped);
+        document.getElementById('usd-unpaid').textContent = formatMoney(totals.USD.total - totals.USD.paid);
+        document.getElementById('usd-unshipped').textContent = formatMoney(totals.USD.total - totals.USD.shipped);
+
+        // EUR
+        document.getElementById('eur-total').textContent = formatMoney(totals.EUR.total);
+        document.getElementById('eur-paid').textContent = formatMoney(totals.EUR.paid);
+        document.getElementById('eur-shipped').textContent = formatMoney(totals.EUR.shipped);
+        document.getElementById('eur-unpaid').textContent = formatMoney(totals.EUR.total - totals.EUR.paid);
+        document.getElementById('eur-unshipped').textContent = formatMoney(totals.EUR.total - totals.EUR.shipped);
+    }
+    // -------------------------------------------------------------------------------------------
 
     // 5.11. Функція завантаження даних одного договору за ID для редагування (GET)
     async function loadContractDetails(contractId) {

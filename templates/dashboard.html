@@ -134,6 +134,157 @@
           </div>
         </div>
 
+        <!-- БЛОК ЗАГАЛЬНИХ ПІДСУМКІВ У РОЗРІЗІ ВАЛЮТ (КОМПАКТНА СІТКА) -->
+        <div
+          id="contracts-summary-dashboard"
+          style="
+            display: flex;
+            gap: 15px;
+            margin: 12px 0;
+            flex-wrap: wrap;
+            align-items: stretch;
+          "
+        >
+          <!-- Загальна кількість договорів -->
+          <div
+            style="
+              background: #f8f9fa;
+              border: 1px solid #333;
+              padding: 8px 14px;
+              display: flex;
+              flex-direction: column;
+              justify-content: center;
+              align-items: center;
+              min-width: 90px;
+            "
+          >
+            <span style="font-size: 12px; color: #555">Договорів:</span>
+            <span id="summary-count" style="font-size: 18px; font-weight: bold"
+              >0</span
+            >
+          </div>
+
+          <!-- Блок UAH -->
+          <div
+            style="
+              background: #f8f9fa;
+              border: 1px solid #333;
+              padding: 8px 14px;
+              display: grid;
+              grid-template-columns: auto 1fr 1fr;
+              column-gap: 18px;
+              row-gap: 4px;
+              font-size: 13px;
+            "
+          >
+            <div style="font-weight: bold; color: #0275d8; padding-right: 6px">
+              UAH
+            </div>
+            <div>Сума: <strong id="uah-total">0,00</strong></div>
+            <div></div>
+
+            <div></div>
+            <div>
+              Оплачено:
+              <strong id="uah-paid" style="color: #5cb85c">0,00</strong>
+            </div>
+            <div>
+              Відвантажено:
+              <strong id="uah-shipped" style="color: #5bc0de">0,00</strong>
+            </div>
+
+            <div></div>
+            <div>
+              Неоплачено:
+              <strong id="uah-unpaid" style="color: #d9534f">0,00</strong>
+            </div>
+            <div>
+              Невідвантажено:
+              <strong id="uah-unshipped" style="color: #f0ad4e">0,00</strong>
+            </div>
+          </div>
+
+          <!-- Блок USD -->
+          <div
+            style="
+              background: #f8f9fa;
+              border: 1px solid #333;
+              padding: 8px 14px;
+              display: grid;
+              grid-template-columns: auto 1fr 1fr;
+              column-gap: 18px;
+              row-gap: 4px;
+              font-size: 13px;
+            "
+          >
+            <div style="font-weight: bold; color: #0275d8; padding-right: 6px">
+              USD
+            </div>
+            <div>Сума: <strong id="usd-total">0,00</strong></div>
+            <div></div>
+
+            <div></div>
+            <div>
+              Оплачено:
+              <strong id="usd-paid" style="color: #5cb85c">0,00</strong>
+            </div>
+            <div>
+              Відвантажено:
+              <strong id="usd-shipped" style="color: #5bc0de">0,00</strong>
+            </div>
+
+            <div></div>
+            <div>
+              Неоплачено:
+              <strong id="usd-unpaid" style="color: #d9534f">0,00</strong>
+            </div>
+            <div>
+              Невідвантажено:
+              <strong id="usd-unshipped" style="color: #f0ad4e">0,00</strong>
+            </div>
+          </div>
+
+          <!-- Блок EUR -->
+          <div
+            style="
+              background: #f8f9fa;
+              border: 1px solid #333;
+              padding: 8px 14px;
+              display: grid;
+              grid-template-columns: auto 1fr 1fr;
+              column-gap: 18px;
+              row-gap: 4px;
+              font-size: 13px;
+            "
+          >
+            <div style="font-weight: bold; color: #0275d8; padding-right: 6px">
+              EUR
+            </div>
+            <div>Сума: <strong id="eur-total">0,00</strong></div>
+            <div></div>
+
+            <div></div>
+            <div>
+              Оплачено:
+              <strong id="eur-paid" style="color: #5cb85c">0,00</strong>
+            </div>
+            <div>
+              Відвантажено:
+              <strong id="eur-shipped" style="color: #5bc0de">0,00</strong>
+            </div>
+
+            <div></div>
+            <div>
+              Неоплачено:
+              <strong id="eur-unpaid" style="color: #d9534f">0,00</strong>
+            </div>
+            <div>
+              Невідвантажено:
+              <strong id="eur-unshipped" style="color: #f0ad4e">0,00</strong>
+            </div>
+          </div>
+        </div>
+
         <div id="contracts-list-container"></div>
       </div>
       <div id="tab-counterparties" class="tab-content">
