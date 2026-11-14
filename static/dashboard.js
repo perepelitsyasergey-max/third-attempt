@@ -1017,7 +1017,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     // ------------------------------------------------------------------------------------------------------
 
-    // Функція застосування фільтра за статусом
+    // Функція застосування фільтрів
     function applyContractFilter() {
         const filterSelect = document.getElementById('filter-contract-stage');
         const selectedStage = filterSelect ? filterSelect.value : '';
@@ -1084,6 +1084,65 @@ document.addEventListener('DOMContentLoaded', () => {
                     (i.user && i.user.toLowerCase().includes(searchText))
                 );
             });
+        }
+
+        
+        // 6. ДОДАЄМО СОРТУВАННЯ ЗА ДАТОЮ ЗАКІНЧЕННЯ
+        
+        const sortSelect = document.getElementById('sort-contracts-end-date');
+        const sortValue = sortSelect ? sortSelect.value : '';
+
+        if (sortValue) {
+            filtered.sort((a, b) => {
+                // Якщо у договору немає дати закінчення, ставимо його в кінець
+                const dateA = a.end_date ? new Date(a.end_date) : (sortValue === 'asc' ? new Date('9999-12-31') : new Date('1970-01-01'));
+                const dateB = b.end_date ? new Date(b.end_date) : (sortValue === 'asc' ? new Date('9999-12-31') : new Date('1970-01-01'));
+
+                if (sortValue === 'asc') {
+                    return dateA - dateB; // Спочатку найближчі (від меншої дати до більшої)
+                } else {
+                    return dateB - dateA; // Спочатку найдальші (від більшої дати до меншої)
+                }
+            });
+        }
+
+        // 7. Сортування за датою договору (contract_date)
+        const sortDateSelect = document.getElementById('sort-contracts-date');
+        const sortDateValue = sortDateSelect ? sortDateSelect.value : '';
+
+        if (sortDateValue) {
+            filtered.sort((a, b) => {
+                const dateA = a.contract_date ? new Date(a.contract_date) : (sortDateValue === 'asc' ? new Date('9999-12-31') : new Date('1970-01-01'));
+                const dateB = b.contract_date ? new Date(b.contract_date) : (sortDateValue === 'asc' ? new Date('9999-12-31') : new Date('1970-01-01'));
+
+                if (sortDateValue === 'asc') {
+                    return dateA - dateB; // Від найстаріших до новіших
+                } else {
+                    return dateB - dateA; // Від найновіших до старіших
+                }
+            });
+        }
+
+        // 8. ФІЛЬТРАЦІЯ ЗА ПЕРІОДОМ ДАТ
+        const contractDateFrom = document.getElementById('filter-contract-date-from')?.value;
+        const contractDateTo = document.getElementById('filter-contract-date-to')?.value;
+        const endDateFrom = document.getElementById('filter-end-date-from')?.value;
+        const endDateTo = document.getElementById('filter-end-date-to')?.value;
+
+        // Фільтр по даті укладання договору (включно з межами періоду)
+        if (contractDateFrom) {
+            filtered = filtered.filter(i => i.contract_date && i.contract_date >= contractDateFrom);
+        }
+        if (contractDateTo) {
+            filtered = filtered.filter(i => i.contract_date && i.contract_date <= contractDateTo);
+        }
+
+        // Фільтр по даті завершення договору (включно з межами періоду)
+        if (endDateFrom) {
+            filtered = filtered.filter(i => i.end_date && i.end_date >= endDateFrom);
+        }
+        if (endDateTo) {
+            filtered = filtered.filter(i => i.end_date && i.end_date <= endDateTo);
         }
 
         renderContracts(filtered); // Передаємо відфільтрований список у таблицю
@@ -1156,25 +1215,85 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     // ------------------------------------------------------------------------------------------------------
+    // Селекти сортування
+    const sortContractsDateSelect = document.getElementById('sort-contracts-date');
+    
 
+    // Слухач сортування за ДАТОЮ ДОГОВОРУ
+    if (sortContractsDateSelect) {
+        sortContractsDateSelect.addEventListener('change', () => {
+            // Якщо вибрали сортування тут — скидаємо селект дати завершення в дефолт
+            if (sortContractsDateSelect.value && sortContractsEndDateSelect) {
+                sortContractsEndDateSelect.value = '';
+            }
+            applyContractFilter();
+        });
+    }
+    // -------------------------------------------------------------------------------------------------------
 
-    // Чітке та контрольоване скидання конкретних фільтрів
+    // Слухач сортування за ДАТОЮ ЗАВЕРШЕННЯ
+    const sortContractsEndDateSelect = document.getElementById('sort-contracts-end-date');
+    if (sortContractsEndDateSelect) {
+        sortContractsEndDateSelect.addEventListener('change', () => {
+            // Якщо вибрали сортування тут — скидаємо селект дати договору в дефолт
+            if (sortContractsEndDateSelect.value && sortContractsDateSelect) {
+                sortContractsDateSelect.value = '';
+            }
+            applyContractFilter();
+        });
+    }
+    // -------------------------------------------------------------------------------------------------------
+
+    // Слухачі подій для фільтування договорів по датах 
+    ['filter-contract-date-from', 'filter-contract-date-to', 'filter-end-date-from', 'filter-end-date-to'].forEach(id => {
+        const input = document.getElementById(id);
+        if (input) {
+            input.addEventListener('change', () => {
+                applyContractFilter();
+            });
+        }
+    });
+    // --------------------------------------------------------------------------------------------------------------
+
+    // Чітке та контрольоване скидання всіх фільтрів і сортувань
     function resetAllContractFilters() {
-        // Явно знаходимо кожен фільтр за його унікальним ID
+        // 1. Очищаємо текстовий пошук
+        const searchInput = document.getElementById('filter-contract-search');
+        if (searchInput) searchInput.value = '';
+
+        // 2. Скидаємо селект статусу
         const filterStage = document.getElementById('filter-contract-stage');
+        if (filterStage) filterStage.value = '';
+
+        // 3. Скидаємо селект користувача
         const filterUser = document.getElementById('filter-contract-user');
+        if (filterUser) filterUser.value = '';
 
-        // Скидаємо фільтр за статусом
-        if (filterStage) {
-            filterStage.value = '';
-        }
+        // 4. Скидаємо селекти сортування
+        const sortSelect = document.getElementById('sort-contracts-end-date');
+        if (sortSelect) sortSelect.value = '';
 
-        // Скидаємо фільтр за користувачем
-        if (filterUser) {
-            filterUser.value = '';
-        }
+        const sortDateSelect = document.getElementById('sort-contracts-date');
+        if (sortDateSelect) sortDateSelect.value = '';
 
-        // Запускаємо оновлення таблиці
+        // 5. Скидаємо поля періодів дат
+        const dateFrom = document.getElementById('filter-contract-date-from');
+        if (dateFrom) dateFrom.value = '';
+
+        const dateTo = document.getElementById('filter-contract-date-to');
+        if (dateTo) dateTo.value = '';
+
+        const endDateFrom = document.getElementById('filter-end-date-from');
+        if (endDateFrom) endDateFrom.value = '';
+
+        const endDateTo = document.getElementById('filter-end-date-to');
+        if (endDateTo) endDateTo.value = '';
+
+        // 6. Знімаємо галочку з архіву
+        const archiveCheckbox = document.getElementById('filter-contract-archive');
+        if (archiveCheckbox) archiveCheckbox.checked = false;
+
+        // Запускаємо оновлення таблиці з повним списком
         applyContractFilter();
     }
     // ---------------------------------------------------------------------------------------------------
@@ -1187,6 +1306,17 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     // ------------------------------------------------------------------------------------------------
+
+    // Допоміжна функція перетворення дати з "РРРР-ММ-ДД" у "ДД.ММ.РРРР"
+    function formatDateUA(dateString) {
+        if (!dateString) return '';
+        // Якщо дата вже у форматі РРРР-ММ-ДД (наприклад, з input type="date" або бази)
+        const parts = dateString.split('-');
+        if (parts.length === 3) {
+            return `${parts[2]}.${parts[1]}.${parts[0]}`;
+        }
+        return dateString; // Повертаємо як є, якщо формат інший
+    }
 
     // 5.10. Функція відображення списку договорів у вигляді таблиці
     function renderContracts(contracts) {
@@ -1231,7 +1361,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         contracts.forEach(i => {
 
-            // 👉 ПЕРЕКЛАДАЄМО СТАТУС ДЛЯ КОЖНОГО ДОГОВОРУ
+            // ПЕРЕКЛАДАЄМО СТАТУС ДЛЯ КОЖНОГО ДОГОВОРУ
             const displayStage = stageTranslations[i.contract_stage] || i.contract_stage || '';
 
             const row = document.createElement('tr');
@@ -1242,8 +1372,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td>${i.contract_number || ''}</td>
                 <td>${i.counterparty_1 || ''}</td>
                 <td>${i.counterparty_2 || ''}</td>
-                <td>${i.contract_date || ''}</td>
-                <td>${i.end_date || ''}</td>
+                <td>${formatDateUA(i.contract_date) || ''}</td>
+                <td>${formatDateUA(i.end_date) || ''}</td>
                 <td>${displayStage}</td> <!-- ВИВЕДЕННЯ ПЕРЕКЛАДЕНОГО СТАТУСУ -->
                 <td>${i.user || ''}</td>
                 <td>

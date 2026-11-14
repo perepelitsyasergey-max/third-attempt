@@ -369,7 +369,7 @@ def create_contract():
         contract_date_db=data.get('contract-date'),
         end_date_db=data.get('end-date'),
         auto_prolongation_db=True if data.get('auto-prolongation') else False,
-        is_archived_db=True if data.get('archival-contracts') else False,
+        archival_contracts_db=True if data.get('archival-contracts') else False,
         user_db=session.get('user_in_session'),
         contract_type_db=data.get('contract-type'),
         contract_stage_db=data.get('contract-stage'),
