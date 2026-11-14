@@ -35,20 +35,25 @@
 
       <!-- Панель фільтрів -->
       <div id="filter-panel">
+        <!-- Пошук -->
         <div>
-          <label for="filter-contract-stage"><strong>Фільтр за статусом:</strong></label>
+          <input type="text" id="filter-contract-search" placeholder="Пошук по договорах..."
+            style="padding: 5px; width: 200px;">
+        </div>
+        <!-- Фільтр за статусом -->
+        <div>
           <select id="filter-contract-stage" style="padding: 5px;">
-            <option value="">Усі статуси</option>
+            <option value="">За статусом</option>
             <option value="concluding">Укладання</option>
             <option value="active">Діючий</option>
             <option value="without_support">Діючий (без супроводу)</option>
             <option value="completed">Завершений</option>
           </select>
         </div>
+        <!-- Фільтр за користувачем -->
         <div>
-          <label for="filter-contract-user"><strong>Фільтр за користувачем:</strong></label>
           <select id="filter-contract-user" style="padding: 5px;">
-            <option value="">Усі користувачі</option>
+            <option value=""></option>
             <!-- Динамічні опції сформуються через JavaScript -->
           </select>
         </div>
@@ -61,15 +66,11 @@
         <!-- Архів договорів -->
         <div>
           <label>
-            <input type="checkbox" id="filter-contract-archive"> Показувати архівні договори
+            <input type="checkbox" id="filter-contract-archive"> Архів
           </label>
           <span id="archived-count-badge"></span>
         </div>
-        <!-- Пошук -->
-        <div>
-          <input type="text" id="filter-contract-search" placeholder="Пошук по договорах..."
-            style="padding: 5px; width: 200px;">
-        </div>
+
       </div>
 
       <div id="contracts-list-container"></div>

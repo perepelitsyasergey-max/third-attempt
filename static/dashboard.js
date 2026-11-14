@@ -1054,7 +1054,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // 3. Керуємо відображенням лічильника біля чекбокса
         if (countBadge) {
             if (!showArchived && archivedCount > 0) {
-                countBadge.textContent = `(в архіві приховано: ${archivedCount})`;
+                countBadge.textContent = `(${archivedCount} дог.)`;
                 countBadge.style.display = 'inline';
             } else {
                 countBadge.textContent = '';
