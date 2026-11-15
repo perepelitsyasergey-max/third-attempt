@@ -193,6 +193,12 @@ document.addEventListener('DOMContentLoaded', () => {
     loadContracts();
     // -----------------------------------------------------------------------------------------------
 
+    // Активація захисту полів контрагентів: дозволяє швидкий пошук через datalist,
+    // але запобігає випадковому ручному редагуванню чи введенню стороннього тексту (опечаток/пробілів)
+    setupProtectedDatalist('counterparty-1', 'counterparties-list');
+    setupProtectedDatalist('counterparty-2', 'counterparties-list');
+    // ----------------------------------------------------------------------------------------------------
+
 
 
     // ===========================================================================================
@@ -284,7 +290,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     // -----------------------------------------------------------------------------------------------
 
-    // 3.7. Обробник кліку на кнопку "Зберегти" у модальному вікні
+    // 3.7. Обробник кліку на кнопку "Зберегти" у модальному вікні Товар
     if (btnSaveProduct) {
         btnSaveProduct.addEventListener('click', async () => {
             const productData = getProductFormData();
@@ -293,6 +299,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (result) {
                 closeAddProductModal();
                 await loadProducts();
+                showToast(result.message);
             }
         });
     }
@@ -593,6 +600,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // оновлюємо випадаючий список у формі договору миттєво після швидкого додавання контрагента
                 await updateCounterpartiesDatalist();
+
+                showToast(result.message || 'Контрагент успішно збережений!');
             }
         });
         // Закриваємо асинхронну функцію-обробник події кліку
@@ -959,7 +968,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 // Виводимо повідомлення про успішне збереження
-                alert(result.message || 'Договір успішно збережено!');
+                showToast(result.message || 'Договір успішно збережений!');
 
                 // Оновлюємо список договорів
                 await loadContracts();
@@ -1586,6 +1595,35 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     // --------------------------------------------------------------------------------------------
 
+    // Функція захисту від редагування обраного контрагента
+    function setupProtectedDatalist(inputId, datalistId) {
+        const inputElement = document.getElementById(inputId);
+        const datalistElement = document.getElementById(datalistId);
+
+        if (!inputElement || !datalistElement) return;
+
+        let lastValidValue = inputElement.value;
+
+        // Коли користувач фокусується або починає друкувати, якщо значення вже було вибране — 
+        // даємо можливість очистити поле для нового пошуку, або валідуємо при втраті фокусу.
+        inputElement.addEventListener('focus', () => {
+            lastValidValue = inputElement.value;
+        });
+
+        inputElement.addEventListener('change', () => {
+            const allowedValues = Array.from(datalistElement.options).map(opt => opt.value);
+            
+            // Якщо те, що ввели, відсутнє у списку контрагентів — це невалідний текст (спроба ручного редагування)
+            if (inputElement.value && !allowedValues.includes(inputElement.value)) {
+                showToast('Будь ласка, оберіть контрагента зі списку!');
+                inputElement.value = lastValidValue; // Повертаємо попереднє або очищаємо
+            } else {
+                lastValidValue = inputElement.value;
+            }
+        });
+    }
+    // --------------------------------------------------------------------------------------------------------
+
     // ===========================================================================================
     // 6. ЛОГІКА РОБОТИ ЗІ СПЕЦИФІКАЦІЯМИ
     // ===========================================================================================
@@ -2155,7 +2193,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const result = await sendSpecificationOnServer(contractId, specId, specData);
 
             if (result) {
-                alert(result.message || 'Специфікацію успішно збережено!');
+                showToast(result.message || 'Специфікацію успішно збережено!');
                 closeAddSpecificationModal();
                 await loadContractSpecifications(contractId);
             }
@@ -2730,6 +2768,34 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     }
+
+
+    // ===========================================================================================
+    // __. Загальні функції
+    // ===========================================================================================
+
+    // Функція красивого спливаючого сповіщення (замість стандартного alert)
+    function showToast(message = "Дані збережено!") {
+        // Перевіряємо, чи такий елемент уже є на сторінці, якщо ні — створюємо його програмно
+        let toast = document.getElementById('custom-toast');
+        if (!toast) {
+            toast = document.createElement('div');
+            toast.id = 'custom-toast';
+            document.body.appendChild(toast);
+        }
+
+        toast.textContent = message;
+        
+        // Показуємо сповіщення
+        toast.classList.add('show');
+
+        // Ховаємо через 3 секунди (3000 мілісекунд)
+        setTimeout(() => {
+            toast.classList.remove('show');
+        }, 3000);
+    }
+    // ---------------------------------------------------------------------------------
+
 
 
 

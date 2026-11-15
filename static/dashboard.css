@@ -408,3 +408,30 @@
 .btn-success:hover {
     background-color: #218838;
 }
+/* ------------------------------------------------------------------------------------------ */
+
+
+
+/* Стиль для спливаючого сповіщення */
+#custom-toast {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #28a745;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    font-size: 15px;
+    font-weight: 500;
+    z-index: 99999;
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+    pointer-events: none;
+}
+
+#custom-toast.show {
+    opacity: 1;
+}
+/* ---------------------------------------------------------------------------------- */
