@@ -8,6 +8,8 @@ from dotenv import load_dotenv
 from flask_sqlalchemy import SQLAlchemy
 import uuid
 from werkzeug.utils import secure_filename
+from flask import send_from_directory
+import os
 
 
 # Завантажуємо змінні з файла .env
@@ -792,9 +794,29 @@ def update_specification(spec_id):
 # 6.7. Отримання списку документів конкретного договору (API GET)
 @app.route('/api/contracts/<int:contract_id>/documents', methods=['GET'])
 def get_contract_documents(contract_id):
+    # Отримуємо документи і сортуємо їх: спочатку за типом, потім за назвою файлу
     docs = ContractDocument.query.filter_by(contract_id=contract_id).all()
+    
+    # Створюємо логічний порядок для типів документів
+    type_priority = {
+        "dohovir": 1,
+        "dodatkova_uhoda": 2,
+        "akt_pryimannya_peredachi": 3,
+        "akt_posluh": 4,
+        "akt_davalnynskoyi": 5,
+        "vydatkova": 6,
+        "rakhunok": 7,
+        "tekhnichne_zavdannya": 8,
+        "memorandum": 9,
+        "nda": 10,
+        "inshe": 11
+    }
+    
+    # Сортуємо масив у Python за пріоритетом типу, а потім за назвою файлу
+    docs_sorted = sorted(docs, key=lambda d: (type_priority.get(d.doc_type_db, 99), d.file_name_db))
+
     docs_list = []
-    for d in docs:
+    for d in docs_sorted:
         docs_list.append({
             'id': d.id,
             'doc_type': d.doc_type_db,
@@ -833,14 +855,17 @@ def upload_contract_document(contract_id):
         os.makedirs(contract_folder)
 
     # 3. Формуємо назву файлу за шаблоном: [Номер]_[тип_документа].[розширення]
-    file_ext = os.path.splitext(file.filename)[1] # зберегти оригінальне розширення (.pdf, .docx, .xlsx тощо)
-    new_file_name = f"{safe_folder_name}_{doc_type}{file_ext}"
-    
-    # Якщо такий файл уже існує, додаємо унікальний суфікс, щоб не затерти
+    file_ext = os.path.splitext(file.filename)[1]
+    base_name = f"{safe_folder_name}_{doc_type}"
+    new_file_name = f"{base_name}{file_ext}"
     target_path = os.path.join(contract_folder, new_file_name)
-    if os.path.exists(target_path):
-        new_file_name = f"{safe_folder_name}_{doc_type}_{uuid.uuid4().hex[:6]}{file_ext}"
+
+    # Якщо файл уже існує, підбираємо наступний порядковий номер (_2, _3, _4...)
+    counter = 2
+    while os.path.exists(target_path):
+        new_file_name = f"{base_name}_{counter}{file_ext}"
         target_path = os.path.join(contract_folder, new_file_name)
+        counter += 1
 
     file.save(target_path)
 
@@ -880,6 +905,26 @@ def delete_contract_document(doc_id):
 
     return jsonify({'message': 'Документ успішно видалено'}), 200
 # -------------------------------------------------------------------------------------------------
+
+# API: Перегляд або завантаження файлу договору за ID документа з бази
+@app.route('/api/documents/<int:doc_id>/download')
+def download_document_by_id(doc_id):
+    doc = ContractDocument.query.get_or_404(doc_id)
+    
+    archive_dir = os.path.abspath('contracts_archive')
+    
+    # file_path_db зберігає шлях типу /contracts_archive/БР-23_26/БР-23_26_dohovir.pdf
+    relative_path = doc.file_path_db.lstrip('/')
+    full_path = os.path.join(os.getcwd(), relative_path)
+    
+    if not os.path.exists(full_path):
+        return "Файл не знайдено на диску", 404
+        
+    directory = os.path.dirname(full_path)
+    filename = os.path.basename(full_path)
+    
+    return send_from_directory(directory, filename)
+# --------------------------------------------------------------------------------------------------
 
 
 

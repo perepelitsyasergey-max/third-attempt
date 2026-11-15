@@ -2608,10 +2608,15 @@ document.addEventListener('DOMContentLoaded', () => {
             // Словник для красивого відображення типів документів українською
             const docTypeNames = {
                 "dohovir": "Договір",
+                "dodatkova_uhoda": "Додаткова угода",
+                "akt_pryimannya_peredachi": "Акт приймання-передачі",
                 "akt_posluh": "Акт послуг",
+                "akt_davalnynskoyi": "Акт давальницької сировини",
                 "vydatkova": "Видаткова накладна",
                 "rakhunok": "Рахунок",
-                "dodatkova_uhoda": "Додаткова угода",
+                "tekhnichne_zavdannya": "Технічне завдання",
+                "memorandum": "Меморандум",
+                "nda": "NDA",
                 "inshe": "Інше"
             };
 
@@ -2622,7 +2627,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="doc-item">
                         <div>
                             <span style="font-weight: bold; font-size: 11px; color: #0275d8; display: block;">[${typeName}]</span>
-                            <a href="${doc.file_path}" target="_blank" title="${doc.file_name}">${doc.file_name}</a>
+                            <a href="/api/documents/${doc.id}/download" target="_blank">${doc.file_name}</a>
                         </div>
                         <button type="button" class="btn-delete-doc" data-id="${doc.id}">Видалити</button>
                     </div>
