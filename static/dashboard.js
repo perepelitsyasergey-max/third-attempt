@@ -1066,6 +1066,13 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
+        // Фільтр за валютою
+        const currencySelect = document.getElementById('filter-contract-currency');
+        const selectedCurrency = currencySelect ? currencySelect.value : '';
+        if (selectedCurrency) {
+            filtered = filtered.filter(i => (i.currency || 'UAH').toUpperCase() === selectedCurrency);
+        }
+
         // 5. Фільтрація за періодом дат
         const contractDateFrom = document.getElementById('filter-contract-date-from')?.value;
         const contractDateTo = document.getElementById('filter-contract-date-to')?.value;
@@ -1249,6 +1256,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     // --------------------------------------------------------------------------------------------------------------
+    
+    // Слухач події зміни значення у випадаючому списку фільтра за ВАЛЮТОЮ
+    const filterContractCurrencySelect = document.getElementById('filter-contract-currency');
+    if (filterContractCurrencySelect) {
+        filterContractCurrencySelect.addEventListener('change', () => {
+            applyContractFilter();
+        });
+    }
+    // -----------------------------------------------------------------------------------------------------------------
 
     // Чітке та контрольоване скидання всіх фільтрів і сортувань
     function resetAllContractFilters() {
@@ -1287,6 +1303,10 @@ document.addEventListener('DOMContentLoaded', () => {
         // 6. Знімаємо галочку з архіву
         const archiveCheckbox = document.getElementById('filter-contract-archive');
         if (archiveCheckbox) archiveCheckbox.checked = false;
+
+        // 7. Скидаємо селект валюти
+        const filterCurrency = document.getElementById('filter-contract-currency');
+        if (filterCurrency) filterCurrency.value = '';
 
         // Запускаємо оновлення таблиці з повним списком
         applyContractFilter();

@@ -37,16 +37,42 @@
 /* Вкладка Договори */
 /* =================================================================================================== */
 
-/* Панель фільтрів */
 #filter-panel {
-    display: flex;
+    display: grid;
+    /* Зменшуємо ширину 1-ї колонки, щоб відстань між елементами була рівною та гармонійною */
+    grid-template-columns: 180px 160px 220px minmax(320px, auto) 140px 110px;
+    gap: 8px 12px;
     align-items: center;
-    gap: 15px;
-    /* Відстань між елементами */
-    flex-wrap: wrap;
-    /* Щоб на менших екранах елементи акуратно переносилися на новий рядок */
+    background: #fdfdfd;
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
     margin-bottom: 15px;
+    width: fit-content;
 }
+
+/* Колонка 1: Пошук + Статус */
+#filter-box-search { grid-column: 1; grid-row: 1; }
+#filter-box-stage { grid-column: 1; grid-row: 2; }
+
+/* Колонка 2: Користувач + Валюта */
+#filter-box-user { grid-column: 2; grid-row: 1; }
+#filter-box-currency { grid-column: 2; grid-row: 2; }
+
+/* Колонка 3: Сортування за датами */
+#filter-box-sort-date { grid-column: 3; grid-row: 1; }
+#filter-box-sort-end-date { grid-column: 3; grid-row: 2; }
+
+/* Колонка 4: Періоди дат */
+#filter-box-date-range { grid-column: 4; grid-row: 1; }
+#filter-box-end-date-range { grid-column: 4; grid-row: 2; }
+
+/* Колонка 5: Архів + Скинути фільтри */
+#filter-box-archive { grid-column: 5; grid-row: 1; }
+#filter-box-reset { grid-column: 5; grid-row: 2; }
+
+/* Колонка 6: Експорт тепер у 1 рядок (наприклад, у першому рядку, а другий залишається акуратно порожнім або підлаштованим) */
+#filter-box-export { grid-column: 6; grid-row: 1; }
 
 
 /* 1. Робимо модальне вікно договору ширшим, щоб зручно вмістити дві колонки */

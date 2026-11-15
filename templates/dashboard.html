@@ -39,18 +39,16 @@
 
         <!-- Панель фільтрів -->
         <div id="filter-panel">
-          <!-- Пошук -->
-          <div>
+          <!-- Колонка 1: Пошук та Статус -->
+          <div id="filter-box-search">
             <input
               type="text"
               id="filter-contract-search"
               placeholder="Пошук по договорах..."
-              style="padding: 5px; width: 200px"
             />
           </div>
-          <!-- Фільтр за статусом -->
-          <div>
-            <select id="filter-contract-stage" style="padding: 5px">
+          <div id="filter-box-stage">
+            <select id="filter-contract-stage">
               <option value="">За статусом</option>
               <option value="concluding">Укладання</option>
               <option value="active">Діючий</option>
@@ -58,96 +56,68 @@
               <option value="completed">Завершений</option>
             </select>
           </div>
-          <!-- Фільтр за користувачем -->
-          <div>
-            <select id="filter-contract-user" style="padding: 5px">
+
+          <!-- Колонка 2: Користувачі та Валюти -->
+          <div id="filter-box-user">
+            <select id="filter-contract-user">
               <option value=""></option>
-              <!-- Динамічні опції сформуються через JavaScript -->
             </select>
           </div>
-          <!-- Сортування за датою договору -->
-          <div>
-            <select id="sort-contracts-date" style="padding: 5px">
-              <option value="">Сортування за датою договору</option>
-              <option value="asc">
-                Спочатку старіші (від ранніх до пізніх)
-              </option>
-              <option value="desc">
-                Спочатку новіші (від пізніх до ранніх)
-              </option>
+          <div id="filter-box-currency">
+            <select id="filter-contract-currency">
+              <option value="">Усі валюти</option>
+              <option value="UAH">UAH</option>
+              <option value="USD">USD</option>
+              <option value="EUR">EUR</option>
             </select>
           </div>
 
-          <!-- Сортування за датою закінчення -->
-          <div>
-            <select id="sort-contracts-end-date" style="padding: 5px">
+          <!-- Колонка 3: Сортування -->
+          <div id="filter-box-sort-date">
+            <select id="sort-contracts-date">
+              <option value="">Сортування за датою дог.</option>
+              <option value="asc">Спочатку старіші</option>
+              <option value="desc">Спочатку новіші</option>
+            </select>
+          </div>
+          <div id="filter-box-sort-end-date">
+            <select id="sort-contracts-end-date">
               <option value="">По даті завершення дог.</option>
-              <option value="asc">Дата закінчення: спочатку найближчі</option>
-              <option value="desc">Дата закінчення: спочатку найдальші</option>
+              <option value="asc">Спочатку найближчі</option>
+              <option value="desc">Спочатку найдальші</option>
             </select>
           </div>
-          <!-- Фільтр за періодом дати договору -->
-          <div style="display: flex; gap: 5px; align-items: center">
-            <span style="font-size: 13px">Дата дог. з:</span>
-            <input
-              type="date"
-              id="filter-contract-date-from"
-              style="padding: 4px"
-            />
+
+          <!-- Колонка 4: Періоди дат -->
+          <div id="filter-box-date-range">
+            <span>Дата дог. з:</span>
+            <input type="date" id="filter-contract-date-from" />
             <span>по:</span>
-            <input
-              type="date"
-              id="filter-contract-date-to"
-              style="padding: 4px"
-            />
+            <input type="date" id="filter-contract-date-to" />
           </div>
-
-          <!-- Фільтр за періодом дати завершення -->
-          <div
-            style="
-              display: flex;
-              gap: 5px;
-              align-items: center;
-              margin-left: 10px;
-            "
-          >
-            <span style="font-size: 13px">Дата зав. з:</span>
-            <input type="date" id="filter-end-date-from" style="padding: 4px" />
+          <div id="filter-box-end-date-range">
+            <span>Дата зав. з:</span>
+            <input type="date" id="filter-end-date-from" />
             <span>по:</span>
-            <input type="date" id="filter-end-date-to" style="padding: 4px" />
-          </div>
-          <!-- Кнопка скидання фільтрів -->
-          <div>
-            <button
-              type="button"
-              id="btn-reset-filters"
-              style="padding: 5px 10px; cursor: pointer"
-            >
-              Скинути фільтри
-            </button>
+            <input type="date" id="filter-end-date-to" />
           </div>
 
-          <button
-            id="btn-export-excel"
-            style="
-              background-color: #28a745;
-              color: white;
-              border: none;
-              padding: 6px 12px;
-              border-radius: 4px;
-              cursor: pointer;
-              font-weight: bold;
-            "
-          >
-            📊 Експорт в Excel
-          </button>
-
-          <!-- Архів договорів -->
-          <div>
+          <!-- Колонка 5: Архів та Скинути фільтри -->
+          <div id="filter-box-archive">
             <label>
               <input type="checkbox" id="filter-contract-archive" /> Архів
             </label>
             <span id="archived-count-badge"></span>
+          </div>
+          <div id="filter-box-reset">
+            <button type="button" id="btn-reset-filters">
+              Скинути фільтри
+            </button>
+          </div>
+
+          <!-- Колонка 6: Експорт -->
+          <div id="filter-box-export">
+            <button id="btn-export-excel">📊 Експорт</button>
           </div>
         </div>
 
