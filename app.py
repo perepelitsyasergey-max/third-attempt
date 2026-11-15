@@ -6,6 +6,8 @@ from flask import Flask, render_template, request, jsonify, session, redirect
 import os
 from dotenv import load_dotenv
 from flask_sqlalchemy import SQLAlchemy
+import uuid
+from werkzeug.utils import secure_filename
 
 
 # Завантажуємо змінні з файла .env
@@ -19,6 +21,9 @@ app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
+
+# Головна папка для збереження документів
+MAIN_STORAGE = os.path.join(os.getcwd(), 'contracts_archive')
 
 
 # =================================================================================================
@@ -104,6 +109,16 @@ class PaymentShippingRecord(db.Model):
     pay_sum_db = db.Column(db.Numeric(12, 2), nullable=True, default=0.00)  # Сума оплати
     ship_date_db = db.Column(db.String(50), nullable=True)  # Дата поставки (відвантаження)
     ship_sum_db = db.Column(db.Numeric(12, 2), nullable=True, default=0.00)  # Сума поставки
+
+    # 2.6. Документи по договору
+class ContractDocument(db.Model):
+    __tablename__ = 'contract_documents'
+
+    id = db.Column(db.Integer, primary_key=True)
+    contract_id = db.Column(db.Integer, db.ForeignKey('contracts.id'), nullable=False)
+    doc_type_db = db.Column(db.String(50), nullable=False)     # Тип (dohovir, akt_posluh, vydatkova, rakhunok тощо)
+    file_name_db = db.Column(db.String(255), nullable=False)   # Оригінальна назва файлу або збережена назва
+    file_path_db = db.Column(db.String(500), nullable=False)   # Шлях до файлу на сервері
 
 
 
@@ -774,6 +789,97 @@ def update_specification(spec_id):
     db.session.commit()
     return jsonify({'message': 'Специфікацію успішно оновлено!'}), 200
 # ----------------------------------------------------------------------------------------------
+# 6.7. Отримання списку документів конкретного договору (API GET)
+@app.route('/api/contracts/<int:contract_id>/documents', methods=['GET'])
+def get_contract_documents(contract_id):
+    docs = ContractDocument.query.filter_by(contract_id=contract_id).all()
+    docs_list = []
+    for d in docs:
+        docs_list.append({
+            'id': d.id,
+            'doc_type': d.doc_type_db,
+            'file_name': d.file_name_db,
+            'file_path': d.file_path_db
+        })
+    return jsonify(docs_list), 200
+# -------------------------------------------------------------------------------------------------
+
+
+# 6.8. Завантаження нового документа до договору (API POST)
+@app.route('/api/contracts/<int:contract_id>/documents', methods=['POST'])
+def upload_contract_document(contract_id):
+    contract = Contract.query.get_or_404(contract_id)
+    
+    if 'file' not in request.files:
+        return jsonify({'error': 'Файл не передано'}), 400
+    
+    file = request.files['file']
+    doc_type = request.form.get('doc_type', 'dohovir') # наприклад: dohovir, akt_posluh, vydatkova, rakhunok
+
+    if file.filename == '':
+        return jsonify({'error': 'Файл не обрано'}), 400
+
+    # Визначаємо реєстраційний номер договору для папки (якщо немає, беремо з ID)
+    reg_number = contract.reg_number_contract_db or f"BR-{contract.id}_26"
+    safe_folder_name = reg_number.replace('/', '_').replace('\\', '_')
+
+    # 1. Перевіряємо/створюємо основну папку contracts_archive
+    if not os.path.exists(MAIN_STORAGE):
+        os.makedirs(MAIN_STORAGE)
+
+    # 2. Перевіряємо/створюємо папку договору (формат BR-2_26)
+    contract_folder = os.path.join(MAIN_STORAGE, safe_folder_name)
+    if not os.path.exists(contract_folder):
+        os.makedirs(contract_folder)
+
+    # 3. Формуємо назву файлу за шаблоном: [Номер]_[тип_документа].[розширення]
+    file_ext = os.path.splitext(file.filename)[1] # зберегти оригінальне розширення (.pdf, .docx, .xlsx тощо)
+    new_file_name = f"{safe_folder_name}_{doc_type}{file_ext}"
+    
+    # Якщо такий файл уже існує, додаємо унікальний суфікс, щоб не затерти
+    target_path = os.path.join(contract_folder, new_file_name)
+    if os.path.exists(target_path):
+        new_file_name = f"{safe_folder_name}_{doc_type}_{uuid.uuid4().hex[:6]}{file_ext}"
+        target_path = os.path.join(contract_folder, new_file_name)
+
+    file.save(target_path)
+
+    # Зберігаємо інформацію в базу даних
+    new_doc = ContractDocument(
+        contract_id=contract.id,
+        doc_type_db=doc_type,
+        file_name_db=new_file_name,
+        file_path_db=f"/contracts_archive/{safe_folder_name}/{new_file_name}"
+    )
+    db.session.add(new_doc)
+    db.session.commit()
+
+    return jsonify({'message': 'Документ успішно завантажено!', 'id': new_doc.id, 'file_name': new_file_name}), 201
+# -------------------------------------------------------------------------------------------------
+
+# 6.9. Видалення документа (API DELETE)
+@app.route('/api/documents/<int:doc_id>', methods=['DELETE'])
+def delete_contract_document(doc_id):
+    doc = ContractDocument.query.get_or_404(doc_id)
+    
+    # Повний шлях до файлу на диску
+    if doc.file_path_db:
+        # Відсікаємо провідний слеш для об'єднання шляхів
+        relative_path = doc.file_path_db.lstrip('/')
+        full_path = os.path.join(os.getcwd(), relative_path)
+        
+        # Фізично видаляємо файл, якщо він існує
+        if os.path.exists(full_path):
+            try:
+                os.remove(full_path)
+            except Exception as e:
+                print(f"Помолка видалення файлу з диска: {e}")
+
+    db.session.delete(doc)
+    db.session.commit()
+
+    return jsonify({'message': 'Документ успішно видалено'}), 200
+# -------------------------------------------------------------------------------------------------
 
 
 

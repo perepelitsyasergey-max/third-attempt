@@ -52,33 +52,71 @@
 }
 
 /* Колонка 1: Пошук + Статус */
-#filter-box-search { grid-column: 1; grid-row: 1; }
-#filter-box-stage { grid-column: 1; grid-row: 2; }
+#filter-box-search {
+    grid-column: 1;
+    grid-row: 1;
+}
+
+#filter-box-stage {
+    grid-column: 1;
+    grid-row: 2;
+}
 
 /* Колонка 2: Користувач + Валюта */
-#filter-box-user { grid-column: 2; grid-row: 1; }
-#filter-box-currency { grid-column: 2; grid-row: 2; }
+#filter-box-user {
+    grid-column: 2;
+    grid-row: 1;
+}
+
+#filter-box-currency {
+    grid-column: 2;
+    grid-row: 2;
+}
 
 /* Колонка 3: Сортування за датами */
-#filter-box-sort-date { grid-column: 3; grid-row: 1; }
-#filter-box-sort-end-date { grid-column: 3; grid-row: 2; }
+#filter-box-sort-date {
+    grid-column: 3;
+    grid-row: 1;
+}
+
+#filter-box-sort-end-date {
+    grid-column: 3;
+    grid-row: 2;
+}
 
 /* Колонка 4: Періоди дат */
-#filter-box-date-range { grid-column: 4; grid-row: 1; }
-#filter-box-end-date-range { grid-column: 4; grid-row: 2; }
+#filter-box-date-range {
+    grid-column: 4;
+    grid-row: 1;
+}
+
+#filter-box-end-date-range {
+    grid-column: 4;
+    grid-row: 2;
+}
 
 /* Колонка 5: Архів + Скинути фільтри */
-#filter-box-archive { grid-column: 5; grid-row: 1; }
-#filter-box-reset { grid-column: 5; grid-row: 2; }
+#filter-box-archive {
+    grid-column: 5;
+    grid-row: 1;
+}
+
+#filter-box-reset {
+    grid-column: 5;
+    grid-row: 2;
+}
 
 /* Колонка 6: Експорт тепер у 1 рядок (наприклад, у першому рядку, а другий залишається акуратно порожнім або підлаштованим) */
-#filter-box-export { grid-column: 6; grid-row: 1; }
+#filter-box-export {
+    grid-column: 6;
+    grid-row: 1;
+}
 
 
 /* 1. Робимо модальне вікно договору ширшим, щоб зручно вмістити дві колонки */
 #modal-add-contract {
-    width: 90%;
-    max-width: 1600px;
+    width: 95%;
+    max-width: 1700px;
     /* Максимальна ширина вікна */
     border: 1px solid #ccc;
     border-radius: 8px;
@@ -89,14 +127,36 @@
 .modal-layout {
     display: flex;
     /* Розміщуємо дочірні блоки в один рядок (по горизонталі) */
-    gap: 30px;
+    gap: 20px;
     /* Відстань (відступ) між лівою та правою колонкою */
     align-items: flex-start;
     /* Вирівнюємо колонки по верхньому краю */
     margin-top: 15px;
 }
 
-/* 3. Ліва колонка: Основна інформація договору */
+/* 2.1. Нова ліва колонка: Документи договору */
+.contract-documents-info {
+    flex: 0.7;
+    min-width: 220px;
+    border-right: 2px solid #e0e0e0;
+    padding-right: 20px;
+}
+
+.doc-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 0;
+    border-bottom: 1px solid #eee;
+    font-size: 13px;
+    gap: 6px;
+}
+
+.doc-item a {
+    word-break: break-all;
+}
+
+/* 3. центральна колонка: Основна інформація договору */
 .contract-main-info {
     display: grid;
     grid-template-columns: repeat(5, 1fr);

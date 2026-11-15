@@ -823,6 +823,12 @@ document.addEventListener('DOMContentLoaded', () => {
             specContainer.innerHTML = '<p>До цього договору поки немає доданих специфікацій.</p>';
         }
 
+        // ОЧИЩЕННЯ ДОКУМЕНТІВ НОВОГО ДОГОВОРУ:
+        const docsContainer = document.getElementById('contract-documents-list');
+        if (docsContainer) {
+            docsContainer.innerHTML = '<p style="font-size: 13px; color: #666;">Спочатку збережіть договір, щоб додавати документи.</p>';
+        }
+
         // Скидаємо нулі у формі підсумків договору за валютами
         const zeroTotals = {
             'UAH': { total: 0, paid: 0, shipped: 0 },
@@ -1219,7 +1225,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ------------------------------------------------------------------------------------------------------
     // Селекти сортування
     const sortContractsDateSelect = document.getElementById('sort-contracts-date');
-    
+
 
     // Слухач сортування за ДАТОЮ ДОГОВОРУ
     if (sortContractsDateSelect) {
@@ -1256,7 +1262,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     // --------------------------------------------------------------------------------------------------------------
-    
+
     // Слухач події зміни значення у випадаючому списку фільтра за ВАЛЮТОЮ
     const filterContractCurrencySelect = document.getElementById('filter-contract-currency');
     if (filterContractCurrencySelect) {
@@ -1428,7 +1434,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     // -------------------------------------------------------------------------------------------------------
 
-        // 5.10.1 Функція підрахунку та виведення підсумків у верхні картки-віджети
+    // 5.10.1 Функція підрахунку та виведення підсумків у верхні картки-віджети
     function calculateTableTotals(contracts) {
         const totals = {
             'UAH': { total: 0, paid: 0, shipped: 0 },
@@ -1521,6 +1527,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Завантаження специфікацій для цього договору:
             await loadContractSpecifications(contractId);
+
+            // ЗАВАНТАЖУЄМО ДОКУМЕНТИ ДОГОВОРУ:
+            await loadContractDocuments(contractId);
 
             modalAddcontract.showModal();
         } catch (error) {
@@ -2571,6 +2580,152 @@ document.addEventListener('DOMContentLoaded', () => {
         exportBtn.addEventListener('click', exportContractsToExcel);
     }
     // ------------------------------------------------------------------------------------------------------------
+
+    // ===========================================================================================
+    // 8. ЛОГІКА РОБОТИ З ДОКУМЕНТАМИ ДОГОВОРУ
+    // ===========================================================================================
+
+    // 8.1. Завантаження та відображення списку документів договору
+    async function loadContractDocuments(contractId) {
+        const container = document.getElementById('contract-documents-list');
+        if (!container) return;
+
+        container.innerHTML = '<p style="font-size: 12px; color: #666;">Завантаження документів...</p>';
+
+        try {
+            const response = await fetch(`/api/contracts/${contractId}/documents`);
+            if (!response.ok) {
+                throw new Error('Помилка завантаження документів');
+            }
+
+            const docs = await response.json();
+
+            if (docs.length === 0) {
+                container.innerHTML = '<p style="font-size: 13px; color: #666;">Документи відсутні.</p>';
+                return;
+            }
+
+            // Словник для красивого відображення типів документів українською
+            const docTypeNames = {
+                "dohovir": "Договір",
+                "akt_posluh": "Акт послуг",
+                "vydatkova": "Видаткова накладна",
+                "rakhunok": "Рахунок",
+                "dodatkova_uhoda": "Додаткова угода",
+                "inshe": "Інше"
+            };
+
+            let html = '';
+            docs.forEach(doc => {
+                const typeName = docTypeNames[doc.doc_type] || doc.doc_type;
+                html += `
+                    <div class="doc-item">
+                        <div>
+                            <span style="font-weight: bold; font-size: 11px; color: #0275d8; display: block;">[${typeName}]</span>
+                            <a href="${doc.file_path}" target="_blank" title="${doc.file_name}">${doc.file_name}</a>
+                        </div>
+                        <button type="button" class="btn-delete-doc" data-id="${doc.id}">Видалити</button>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+
+            // Прив'язуємо події до кнопок видалення документів
+            attachDocumentDeleteEvents(container, contractId);
+
+        } catch (error) {
+            console.error(error);
+            container.innerHTML = '<p style="font-size: 12px; color: red;">Не вдалося завантажити документи.</p>';
+        }
+    }
+    // ------------------------------------------------------------------------------------------------
+
+    // 8.2. Обробник кліку на кнопку "Завантажити документ"
+    const btnUploadDocument = document.getElementById('btn-upload-document');
+    if (btnUploadDocument) {
+        btnUploadDocument.addEventListener('click', async () => {
+            const contractId = document.getElementById('contract-id').value;
+
+            if (!contractId) {
+                alert('Будь ласка, спочатку збережіть договір, перш ніж завантажувати документи!');
+                return;
+            }
+
+            const fileInput = document.getElementById('doc-file-input');
+            const docTypeSelect = document.getElementById('doc-type-select');
+
+            if (!fileInput.files || fileInput.files.length === 0) {
+                alert('Будь ласка, оберіть файл для завантаження!');
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const docType = docTypeSelect.value;
+
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('doc_type', docType);
+
+            try {
+                const response = await fetch(`/api/contracts/${contractId}/documents`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    const errData = await response.json();
+                    throw new Error(errData.error || 'Помилка завантаження файлу');
+                }
+
+                // Очищаємо поле вибору файлу
+                fileInput.value = '';
+
+                // Перезавантажуємо список документів
+                await loadContractDocuments(contractId);
+
+            } catch (error) {
+                console.error(error);
+                alert(`Не вдалося завантажити документ: ${error.message}`);
+            }
+        });
+    }
+    // ------------------------------------------------------------------------------------------------
+
+    // 8.3. Видалення документа на сервері
+    async function deleteDocumentOnServer(docId, contractId) {
+        try {
+            const response = await fetch(`/api/documents/${docId}`, {
+                method: 'DELETE'
+            });
+
+            if (!response.ok) {
+                throw new Error('Помилка при видаленні документа');
+            }
+
+            // Перезавантажуємо список документів договору
+            await loadContractDocuments(contractId);
+
+        } catch (error) {
+            console.error(error);
+            alert(`Не вдалося видалити документ: ${error.message}`);
+        }
+    }
+    // ------------------------------------------------------------------------------------------------
+
+    // 8.4. Прив'язка подій до кнопок видалення документів у списку
+    function attachDocumentDeleteEvents(container, contractId) {
+        const deleteButtons = container.querySelectorAll('.btn-delete-doc');
+        deleteButtons.forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const docId = btn.getAttribute('data-id');
+                if (confirm('Ви дійсно бажаєте видалити цей документ?')) {
+                    await deleteDocumentOnServer(docId, contractId);
+                }
+            });
+        });
+    }
+
 
 
 
