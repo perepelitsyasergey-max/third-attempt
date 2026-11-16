@@ -1380,7 +1380,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <thead>
                 <tr>
                     <th>ID</th>
-                    <th>Реєстр. ном. дог. БР</th>
+                    <th>Реєстр. № дог.</th>
                     <th>Номер угоди</th>
                     <th>Номер договору</th>
                     <th>Контрагент 1</th>
@@ -1393,7 +1393,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <th>Оплачено</th>
                     <th>Відвантажено</th>
                     <th>Користувач</th>
-                    <th>Дії</th>
+                    <th>Редагувати</th>
                     <th>Видалити</th>
                 </tr>
             </thead>
@@ -1612,7 +1612,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         inputElement.addEventListener('change', () => {
             const allowedValues = Array.from(datalistElement.options).map(opt => opt.value);
-            
+
             // Якщо те, що ввели, відсутнє у списку контрагентів — це невалідний текст (спроба ручного редагування)
             if (inputElement.value && !allowedValues.includes(inputElement.value)) {
                 showToast('Будь ласка, оберіть контрагента зі списку!');
@@ -2193,8 +2193,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const result = await sendSpecificationOnServer(contractId, specId, specData);
 
             if (result) {
-                showToast(result.message || 'Специфікацію успішно збережено!');
                 closeAddSpecificationModal();
+                showToast(result.message || 'Специфікацію успішно збережено!');
                 await loadContractSpecifications(contractId);
             }
         });
@@ -2562,6 +2562,9 @@ document.addEventListener('DOMContentLoaded', () => {
             updateSpecificationTotals();
 
             modalPayShip.close();
+
+            // Виводимо спливаюче сповіщення поверх модального вікна специфікації
+            showToast('Оплати та відвантаження збережено!');
         });
     }
     // --------------------------------------------------------------------------------------------------------------
@@ -2784,8 +2787,17 @@ document.addEventListener('DOMContentLoaded', () => {
             document.body.appendChild(toast);
         }
 
+        // Знаходимо всі відкриті модальні вікна (<dialog open>) і беремо останнє (найвище у Top Layer браузера)
+        const openDialogs = document.querySelectorAll('dialog[open]');
+        const topDialog = openDialogs.length > 0 ? openDialogs[openDialogs.length - 1] : null;
+        const targetParent = topDialog || document.body;
+
+        if (toast.parentElement !== targetParent) {
+            targetParent.appendChild(toast);
+        }
+
         toast.textContent = message;
-        
+
         // Показуємо сповіщення
         toast.classList.add('show');
 

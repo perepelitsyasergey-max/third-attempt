@@ -33,6 +33,298 @@
     /* Змінює курсор миші на «вказівний палець» при наведенні */
 }
 
+/* Таблиця товарів */
+#products-list-container table {
+    width: 100%;
+    max-width: 900px;
+    border-collapse: collapse;
+    margin-top: 15px;
+    table-layout: fixed;
+    font-size: 14px;
+    background-color: #fff;
+}
+
+#products-list-container th,
+#products-list-container td {
+    border: 1px solid #ddd;
+    padding: 4px 12px;
+    text-align: left;
+    word-wrap: break-word;
+}
+
+#products-list-container th {
+    background-color: #f4f6f8;
+    font-weight: bold;
+}
+
+/* Зебра та підсвічування рядка при наведенні */
+#products-list-container tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+#products-list-container tbody tr:hover {
+    background-color: #eef5ff;
+}
+
+/* Фіксована ширина колонок (ID, Назва товару, Ціна, Редагувати, Видалити) */
+#products-list-container th:nth-child(1),
+#products-list-container td:nth-child(1) {
+    width: 50px;
+    text-align: center;
+}
+
+#products-list-container th:nth-child(2),
+#products-list-container td:nth-child(2) {
+    width: auto;
+    /* Займає весь вільний простір, довгі назви переносяться на новий рядок */
+}
+
+#products-list-container th:nth-child(3),
+#products-list-container td:nth-child(3) {
+    width: 120px;
+    text-align: right;
+}
+
+#products-list-container th:nth-child(4),
+#products-list-container td:nth-child(4),
+#products-list-container th:nth-child(5),
+#products-list-container td:nth-child(5) {
+    width: 110px;
+    text-align: center;
+}
+
+/* --------------------------------------------------------------------------------- */
+
+/* Таблиця контрагентів */
+#counterparties-list-container table {
+    width: 100%;
+    max-width: 1150px;
+    border-collapse: collapse;
+    margin-top: 15px;
+    table-layout: fixed;
+    font-size: 14px;
+    background-color: #fff;
+}
+
+#counterparties-list-container th,
+#counterparties-list-container td {
+    border: 1px solid #ddd;
+    padding: 4px 8px;
+    text-align: left;
+    word-wrap: break-word;
+}
+
+#counterparties-list-container th {
+    background-color: #f4f6f8;
+    font-weight: bold;
+}
+
+/* Зебра та підсвічування рядка при наведенні */
+#counterparties-list-container tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+#counterparties-list-container tbody tr:hover {
+    background-color: #eef5ff;
+}
+
+/* Фіксована ширина та вирівнювання для кожної з 8 колонок */
+#counterparties-list-container th:nth-child(1),
+#counterparties-list-container td:nth-child(1) {
+    width: 50px;
+    /* ID */
+    text-align: center;
+}
+
+#counterparties-list-container th:nth-child(2),
+#counterparties-list-container td:nth-child(2) {
+    width: 140px;
+    /* Назва */
+}
+
+#counterparties-list-container th:nth-child(3),
+#counterparties-list-container td:nth-child(3) {
+    width: 100px;
+    /* ЄДРПОУ */
+    text-align: center;
+}
+
+#counterparties-list-container th:nth-child(4),
+#counterparties-list-container td:nth-child(4) {
+    width: 100px;
+    /* ІПН */
+    text-align: center;
+}
+
+#counterparties-list-container th:nth-child(5),
+#counterparties-list-container td:nth-child(5) {
+    width: auto;
+    /* Контакти (займає вільний простір) */
+}
+
+#counterparties-list-container th:nth-child(6),
+#counterparties-list-container td:nth-child(6) {
+    width: auto;
+    /* Адреса (займає вільний простір) */
+}
+
+#counterparties-list-container th:nth-child(7),
+#counterparties-list-container td:nth-child(7),
+#counterparties-list-container th:nth-child(8),
+#counterparties-list-container td:nth-child(8) {
+    width: 110px;
+    /* Редагувати / Видалити */
+    text-align: center;
+}
+
+/* -------------------------------------------------------------------------------------- */
+
+/* Таблиця договорів */
+#contracts-list-container table {
+    width: 100%;
+    max-width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+    table-layout: fixed;
+    font-size: 13px;
+    background-color: #fff;
+}
+
+#contracts-list-container th,
+#contracts-list-container td {
+    border: 1px solid #ddd;
+    padding: 4px 6px;
+    text-align: left;
+    word-wrap: break-word;
+    overflow: hidden;
+}
+
+#contracts-list-container th {
+    background-color: #f4f6f8;
+    font-weight: bold;
+    text-align: center;
+}
+
+/* Зебра та підсвічування рядка */
+#contracts-list-container tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+#contracts-list-container tbody tr:hover {
+    background-color: #eef5ff;
+}
+
+/* Налаштування ширини колонок для договорів */
+#contracts-list-container th:nth-child(1),
+#contracts-list-container td:nth-child(1) {
+    width: 15px;
+    text-align: center;
+    /* ID */
+}
+
+#contracts-list-container th:nth-child(2),
+#contracts-list-container td:nth-child(2) {
+    width: 85px;
+    text-align: center;
+    /* Реєстр. ном. */
+}
+
+#contracts-list-container th:nth-child(3),
+#contracts-list-container td:nth-child(3) {
+    width: 80px;
+    /* Номер угоди */
+}
+
+#contracts-list-container th:nth-child(4),
+#contracts-list-container td:nth-child(4) {
+    width: 110px;
+    /* Номер договору */
+}
+
+#contracts-list-container th:nth-child(5),
+#contracts-list-container td:nth-child(5) {
+    width: 130px;
+    /* Контрагент 1 */
+}
+
+#contracts-list-container th:nth-child(6),
+#contracts-list-container td:nth-child(6) {
+    width: 130px;
+    /* Контрагент 2 */
+}
+
+#contracts-list-container th:nth-child(7),
+#contracts-list-container td:nth-child(7) {
+    width: 70px;
+    text-align: center;
+    /* Дата дог. */
+}
+
+#contracts-list-container th:nth-child(8),
+#contracts-list-container td:nth-child(8) {
+    width: 70px;
+    text-align: center;
+    /* Дата закінчення */
+}
+
+#contracts-list-container th:nth-child(9),
+#contracts-list-container td:nth-child(9) {
+    width: 60px;
+    text-align: center;
+    /* Статус */
+}
+
+#contracts-list-container th:nth-child(10),
+#contracts-list-container td:nth-child(10) {
+    width: 48px;
+    text-align: center;
+    /* Валюта */
+}
+
+#contracts-list-container th:nth-child(11),
+#contracts-list-container td:nth-child(11) {
+    width: 85px;
+    text-align: right;
+    /* Сума договору */
+}
+
+#contracts-list-container th:nth-child(12),
+#contracts-list-container td:nth-child(12) {
+    width: 85px;
+    text-align: right;
+    /* Оплачено */
+}
+
+#contracts-list-container th:nth-child(13),
+#contracts-list-container td:nth-child(13) {
+    width: 85px;
+    text-align: right;
+    /* Відвантажено */
+}
+
+#contracts-list-container th:nth-child(14),
+#contracts-list-container td:nth-child(14) {
+    width: 60px;
+    text-align: center;
+    /* Користувач */
+}
+
+#contracts-list-container th:nth-child(15),
+#contracts-list-container td:nth-child(15) {
+    width: 85px;
+    text-align: center;
+    /* Редагувати */
+}
+
+#contracts-list-container th:nth-child(16),
+#contracts-list-container td:nth-child(16) {
+    width: 85px;
+    text-align: center;
+    /* Видалити */
+}
+
+/* --------------------------------------------------------------------------------------- */
+
 /* =================================================================================================== */
 /* Вкладка Договори */
 /* =================================================================================================== */
@@ -408,6 +700,7 @@
 .btn-success:hover {
     background-color: #218838;
 }
+
 /* ------------------------------------------------------------------------------------------ */
 
 
@@ -434,4 +727,5 @@
 #custom-toast.show {
     opacity: 1;
 }
+
 /* ---------------------------------------------------------------------------------- */
