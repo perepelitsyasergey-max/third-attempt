@@ -4,35 +4,69 @@
     justify-content: space-between;
 }
 
+
+/* =================================================================================================== */
+/* Загальні стилі для всіх модальних вікон (dialog) */
+/* =================================================================================================== */
+dialog {
+    padding: 0;
+    border: 1px solid #bbb;
+    border-radius: 8px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+    background-color: #fff;
+    overflow-y: auto;
+    /* Вмикаємо вертикальний скрол для всього модального вікна */
+    max-height: 90vh;
+    /* Обмежуємо висоту вікна 90% від висоти екрана */
+}
+
+/* Верхня сіра шапка вікна (зона перетягування) */
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #e3f2fd;
+    /* М'який сірий відтінок */
+    border-bottom: 1px solid #dee2e6;
+    padding: 10px 16px;
+    cursor: move;
+    user-select: none;
+    margin: 0;
+}
+
+.modal-header h2,
+.modal-header h3 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: bold;
+    color: #333;
+}
+
+/* Кнопка закриття (хрестик) усередині шапки */
+.btn-close {
+    background: none;
+    border: none;
+    font-size: 20px;
+    line-height: 1;
+    color: #666;
+    cursor: pointer;
+    padding: 0 4px;
+    transition: color 0.2s;
+}
+
+.btn-close:hover {
+    color: #d9534f;
+}
+
+/* Вміст модального вікна */
+.modal-content {
+    padding: 20px;
+}
+
+
 /* =================================================================================================== */
 /* Вкладка ТОВАРИ */
 /* =================================================================================================== */
-/* Контейнер модального вікна (базовий елемент для відліку координат) */
-.modal-content {
-    position: relative;
-    /* Встановлює точку відліку для абсолютного позиціонування дочірніх елементів */
-    padding-top: 40px;
-    /* Додає відступ зверху, щоб хрестик не накладався на заголовок */
-}
-
-/* Кнопка закриття (хрестик) */
-.btn-close {
-    position: absolute;
-    /* Фіксує кнопку відносно контейнера .modal-content */
-    top: 10px;
-    /* Притискає кнопку на 10 пікселів від верхнього краю */
-    right: 10px;
-    /* Притискає кнопку на 10 пікселів від правого краю */
-    background: none;
-    /* Прибирає стандартний сірий фон кнопки */
-    border: none;
-    /* Прибирає стандартну рамку кнопки */
-    font-size: 20px;
-    /* Встановлює розмір символу хрестика */
-    cursor: pointer;
-    /* Змінює курсор миші на «вказівний палець» при наведенні */
-}
-
 /* Таблиця товарів */
 #products-list-container table {
     width: 100%;
@@ -407,12 +441,12 @@
 
 /* 1. Робимо модальне вікно договору ширшим, щоб зручно вмістити дві колонки */
 #modal-add-contract {
-    width: 95%;
-    max-width: 1700px;
+    width: 97%;
+    max-width: 2000px;
     /* Максимальна ширина вікна */
     border: 1px solid #ccc;
     border-radius: 8px;
-    padding: 20px;
+
 }
 
 /* 2. Спільний контейнер для двох колонок (використовуємо Flexbox) */
@@ -432,6 +466,10 @@
     min-width: 220px;
     border-right: 2px solid #e0e0e0;
     padding-right: 20px;
+    max-height: 75vh;
+    /* Обмежуємо максимальну висоту колонки всередині вікна */
+    overflow-y: auto;
+    /* Додаємо вертикальний скрол спеціально для списку документів, якщо їх багато */
 }
 
 .doc-item {
@@ -452,9 +490,9 @@
 .contract-main-info {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
-    gap: 12px 15px;
+    gap: 12px 18px;
     align-items: start;
-    flex: 1.2;
+    flex: 2.2;
 }
 
 /* Універсальний стиль для внутрішніх полів */
@@ -606,14 +644,20 @@
 
 /* 4. Права колонка: Блок специфікацій */
 .contract-specifications-info {
-    flex: 1;
+    flex: 1.5;
     /* Займає інші 50% ширини контейнера */
     border-left: 2px solid #e0e0e0;
     /* Сіра розділювальна лінія зліва від специфікацій */
     padding-left: 25px;
     /* Відступ від розділювальної лінії */
-    min-height: 100%;
-    /* Висота на всю колонку */
+
+    /* Додаємо обмеження висоти та скрол, аналогічно до документів */
+    max-height: 75vh;
+    /* Обмежуємо максимальну висоту правої колонки */
+    overflow-y: auto;
+    /* Вмикаємо вертикальний скрол спеціально для специфікацій */
+    padding-right: 10px;
+    /* Невеликий відступ, щоб скролбар не наїжджав на контент */
 }
 
 /* 5. Стилі для кнопки "Зберегти" внизу лівої колонки */
@@ -633,7 +677,7 @@
     max-width: 1000px;
     border: 1px solid #ccc;
     border-radius: 8px;
-    padding: 20px;
+
 }
 
 /* Верхній рядок налаштувань специфікації */
@@ -729,3 +773,78 @@
 }
 
 /* ---------------------------------------------------------------------------------- */
+/* Універсальний стиль для невеликих модальних вікон (товар, контрагент тощо) */
+#modal-add-product,
+#modal-add-counterparty {
+    width: 90%;
+    max-width: 500px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 0;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+}
+
+/* Контейнер форми всередині вікна */
+#modal-add-product form,
+#modal-add-counterparty form {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    /* Рівні та акуратні відступи між полями */
+}
+
+/* Кожне поле введення разом із міткою */
+#modal-add-product label,
+#modal-add-counterparty label {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    font-size: 13px;
+    font-weight: bold;
+    color: #333;
+}
+
+/* Інпути та селекти на всю ширину */
+#modal-add-product input,
+#modal-add-product select,
+#modal-add-counterparty input,
+#modal-add-counterparty select,
+#modal-add-counterparty textarea {
+    width: 100%;
+    padding: 8px 10px;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+/* Забороняємо хаотично розтягувати textarea по ширині, залишаємо лише вертикальний ресайз з обмеженням */
+#modal-add-counterparty textarea {
+    resize: vertical;
+    min-height: 70px;
+    max-height: 150px;
+}
+
+/* Кнопка збереження */
+#modal-add-product button[type="submit"],
+#modal-add-counterparty button[type="submit"],
+#modal-add-counterparty .btn-success {
+    align-self: flex-start;
+    margin-top: 5px;
+    padding: 8px 20px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+#modal-add-product button[type="submit"]:hover,
+#modal-add-counterparty button[type="submit"]:hover,
+#modal-add-counterparty .btn-success:hover {
+    background-color: #218838;
+}
+
+/* ====================================================================================== */

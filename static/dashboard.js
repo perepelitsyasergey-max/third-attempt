@@ -526,6 +526,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // 4.6. Відправка даних створеного або відредагованого Контрагента на сервер (POST / PUT)
     async function sendCounterpartyOnServer(counterpartyData) {
         try {
+
+            // КЛІЄНТСЬКА ВАЛІДАЦІЯ: перевіряємо, чи заповнена назва контрагента
+            const counterpartyName = counterpartyData['name'] || counterpartyData['counterparty-name'] || '';
+            if (!counterpartyName.toString().trim()) {
+                alert('Назва контрагента є обов\'язковою!');
+                return null; // Зупиняємо виконання, ніякий запит на сервер не летить!
+            }
             const counterpartyId = counterpartyData['counterparty-id'];
 
             let method;
@@ -535,7 +542,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (counterpartyId) {
                 method = 'PUT';
                 url = `/api/counterparties/${counterpartyId}`;
-
             }
             // Якщо додаємо нового контрагента
             else {
@@ -552,15 +558,20 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             if (!response.ok) {
-                throw new Error(`Помилка сервера: ${response.status}`);
+                // Намагаємося прочитати деталі помилки від бекенда
+                const errorData = await response.json().catch(() => ({}));
+                const errorMsg = errorData.error || `Помилка сервера: ${response.status}`;
+                throw new Error(errorMsg);
             }
+
             const result = await response.json();
             return result;
 
         }
         catch (error) {
-            console.error('Помилка при збережені контрагента:', error);
-            alert('Не вдалося зберегти контрагента');
+            console.error('Помилка при збереженні контрагента:', error);
+            // Виводимо реальний текст помилки від сервера у вікно попередження
+            alert(`Не вдалося зберегти контрагента:\n${error.message}`);
             return null;
         }
     }
@@ -2057,9 +2068,19 @@ document.addEventListener('DOMContentLoaded', () => {
             // 1. Рахуємо загальну вартість рядка (Кількість × Ціна)
             const qtyInput = row.querySelector('input[name="product-qty"]');
             const priceInput = row.querySelector('input[name="product-price"]');
-            const qty = parseFloat(qtyInput?.value.replace(',', '.')) || 0;
-            const price = parseFloat(priceInput?.value.replace(',', '.')) || 0;
-            totalCost += (qty * price);
+            const qty = parseFloat(qtyInput?.value.replace(/\s/g, '').replace(',', '.')) || 0;
+            const price = parseFloat(priceInput?.value.replace(/\s/g, '').replace(',', '.')) || 0;
+            const rowTotal = qty * price;
+            totalCost += rowTotal;
+
+            // Оновлюємо значення вартості конкретного рядка в таблиці з форматуванням (якщо є такий елемент)
+            const rowTotalCell = row.querySelector('.product-row-total, [name="product-row-total"]');
+            if (rowTotalCell) {
+                rowTotalCell.textContent = rowTotal.toLocaleString('uk-UA', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+            }
 
             // 2. Збираємо суми оплат та відвантажень з властивості рядка
             const records = row._payShipRecords;
@@ -2076,21 +2097,25 @@ document.addEventListener('DOMContentLoaded', () => {
         if (summaryBar) {
             const bElements = summaryBar.querySelectorAll('b');
             if (bElements.length >= 3) {
-                bElements[0].textContent = `${totalCost.toFixed(2)} грн`;
-                bElements[1].textContent = `${totalPaid.toFixed(2)} грн`;
-                bElements[2].textContent = `${totalShipped.toFixed(2)} грн`;
+                bElements[0].textContent = `${totalCost.toLocaleString('uk-UA', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} грн`;
+                bElements[1].textContent = `${totalPaid.toLocaleString('uk-UA', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} грн`;
+                bElements[2].textContent = `${totalShipped.toLocaleString('uk-UA', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} грн`;
             }
         }
 
-        // Також оновлюємо поле "Загальна сума специфікації в грн." у верхній частині форми, якщо воно є
+        // 4. Оновлюємо поле "Загальна сума специфікації в грн." у верхній частині форми з урахуванням uk-UA
         const specTotalAmountInput = document.getElementById('spec-total-amount-in-uah');
         if (specTotalAmountInput) {
             const currencyRateInput = document.getElementById('spec-currency-rate');
-            const rate = parseFloat(currencyRateInput?.value.replace(',', '.')) || 1.0000;
+            const rate = parseFloat(currencyRateInput?.value.replace(/\s/g, '').replace(',', '.')) || 1.0000;
 
-            // Множимо загальну вартість у валюті на курс валюти
             const totalInUah = totalCost * rate;
-            specTotalAmountInput.value = totalInUah.toFixed(2);
+
+            // Записуємо відформатоване число з пробілами та комою
+            specTotalAmountInput.value = totalInUah.toLocaleString('uk-UA', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
         }
     }
     // -----------------------------------------------------------------------------------------------------
@@ -2099,8 +2124,14 @@ document.addEventListener('DOMContentLoaded', () => {
     function getSpecificationFormData() {
         const specNumber = document.getElementById('spec-number').value.trim();
         const currency = document.getElementById('spec-currency').value;
-        const currencyRate = document.getElementById('spec-currency-rate').value;
-        const totalAmount = document.getElementById('spec-total-amount-in-uah').value;
+
+        // Очищаємо курс валюти від можливих пробілів і замінюємо кому на крапку
+        const rawRate = document.getElementById('spec-currency-rate').value || '1';
+        const currencyRate = rawRate.toString().replace(/\s/g, '').replace(',', '.');
+
+        // Очищаємо загальну суму від пробілів (розділювачів тисяч) та замінюємо кому на крапку
+        const rawTotal = document.getElementById('spec-total-amount-in-uah').value;
+        const totalAmount = rawTotal ? rawTotal.toString().replace(/\s/g, '').replace(',', '.') : '0';
 
         // Знаходимо тіло таблиці товарів у модальному вікні специфікації
         const tbody = document.querySelector('#modal-add-specification .spec-products-table tbody');
@@ -2112,12 +2143,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
         rows.forEach(row => {
             const productName = row.querySelector('input[name="product-name"]')?.value.trim() || '';
-            const productQty = row.querySelector('input[name="product-qty"]')?.value || 0;
-            const productPrice = row.querySelector('input[name="product-price"]')?.value || 0;
+
+            // Очищаємо кількість від пробілів та міняємо кому на крапку
+            const rawQty = row.querySelector('input[name="product-qty"]')?.value || '0';
+            const productQty = rawQty.toString().replace(/\s/g, '').replace(',', '.');
+
+            // Очищаємо ціну від пробілів та міняємо кому на крапку
+            const rawPrice = row.querySelector('input[name="product-price"]')?.value || '0';
+            const productPrice = rawPrice.toString().replace(/\s/g, '').replace(',', '.');
+
             const productVat = row.querySelector('select[name="product-vat"]')?.value || '';
 
-            // Збираємо збережені записи оплат та відвантажень напряму з властивості рядка
+            // Збираємо збережені записи оплат та відвантажень напряму з властивості рядка та теж їх очищаємо
             let payShipRecords = row._payShipRecords || [];
+            payShipRecords = payShipRecords.map(rec => ({
+                payDate: rec.payDate,
+                paySum: rec.paySum ? rec.paySum.toString().replace(/\s/g, '').replace(',', '.') : 0,
+                shipDate: rec.shipDate,
+                shipSum: rec.shipSum ? rec.shipSum.toString().replace(/\s/g, '').replace(',', '.') : 0
+            }));
 
             if (productName) {
                 items.push({
@@ -2809,7 +2853,140 @@ document.addEventListener('DOMContentLoaded', () => {
     // ---------------------------------------------------------------------------------
 
 
+    // ===========================================================================================
+    // __. Пересування модальних вікон (Drag & Drop за .modal-header)
+    // ===========================================================================================
+    const dialogs = document.querySelectorAll("dialog");
 
+    dialogs.forEach(dialog => {
+        const header = dialog.querySelector(".modal-header");
+        if (!header) return;
+
+        let isDragging = false;
+        let startX, startY;
+        let initialLeft, initialTop;
+
+        // Звільняємо вікно від централізованого шару браузера одразу при відкритті
+        dialog.addEventListener("show", () => {
+            dialog.style.position = "fixed";
+            dialog.style.left = "";
+            dialog.style.top = "";
+            dialog.style.transform = "";
+            dialog.style.margin = "auto";
+        });
+
+        header.addEventListener("mousedown", (e) => {
+            // Не тягнемо, якщо клікнули на хрестик закриття
+            if (e.target.closest('.btn-close')) return;
+
+            isDragging = true;
+            startX = e.clientX;
+            startY = e.clientY;
+
+            const rect = dialog.getBoundingClientRect();
+
+            // Якщо вікно ще не пересували, фіксуємо його поточні координати перед рухом
+            if (!dialog.style.left || dialog.style.position !== "fixed") {
+                dialog.style.position = "fixed";
+                dialog.style.left = rect.left + "px";
+                dialog.style.top = rect.top + "px";
+                dialog.style.transform = "none";
+                dialog.style.margin = "0";
+            }
+
+            initialLeft = parseInt(dialog.style.left, 10) || rect.left;
+            initialTop = parseInt(dialog.style.top, 10) || rect.top;
+
+            e.preventDefault();
+        });
+
+        document.addEventListener("mousemove", (e) => {
+            if (!isDragging) return;
+
+            const dx = e.clientX - startX;
+            const dy = e.clientY - startY;
+
+            dialog.style.left = (initialLeft + dx) + "px";
+            dialog.style.top = (initialTop + dy) + "px";
+        });
+
+        document.addEventListener("mouseup", () => {
+            isDragging = false;
+        });
+
+        // Скидаємо положення при закритті вікна (щоб наступного разу відкривалося по центру)
+        dialog.addEventListener("close", () => {
+            dialog.style.left = "";
+            dialog.style.top = "";
+            dialog.style.transform = "";
+            dialog.style.margin = "";
+            dialog.style.position = "";
+        });
+    });
+
+
+    // ===========================================================================================
+    // __. Універсальний захист числових полів та форматування з розбиттям на тисячі
+    // ===========================================================================================
+    document.addEventListener('input', (e) => {
+        if (e.target.matches('input[name="product-qty"], input[name="product-price"], #spec-currency-rate, #spec-total-amount-in-uah')) {
+            let val = e.target.value;
+
+            // Залишаємо лише цифри, крапку та кому
+            let cleaned = val.replace(/[^0-9.,]/g, '');
+
+            // Запобігаємо введенню кількох крапок/ком (залишаємо першу)
+            let firstSeparator = -1;
+            cleaned = cleaned.split('').map((char, index) => {
+                if (char === '.' || char === ',') {
+                    if (firstSeparator === -1) {
+                        firstSeparator = index;
+                        return char;
+                    }
+                    return ''; // Видаляємо всі наступні роздільники
+                }
+                return char;
+            }).join('');
+
+            if (val !== cleaned) {
+                e.target.value = cleaned;
+            }
+
+            // Якщо змінюється ціна, одразу перераховуємо підсумки рядочка та специфікації
+            if (e.target.matches('input[name="product-qty"], input[name="product-price"]')) {
+                const row = e.target.closest('tr');
+                if (row) {
+                    calculateRowCost(row);
+                }
+            }
+        }
+    });
+
+    // Форматування та заміна крапки на кому при виході з поля (blur) для цін та загальної суми
+    document.addEventListener('blur', (e) => {
+        if (e.target.matches('input[name="product-price"], #spec-total-amount-in-uah')) {
+            let val = e.target.value.replace(/\s/g, '').replace(',', '.');
+            let num = parseFloat(val);
+            if (!isNaN(num)) {
+                // Форматуємо за українським стандартом з пробілами для тисяч і комою
+                e.target.value = num.toLocaleString('uk-UA', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+            }
+        }
+    }, true);
+
+    // Очищення форматування при кліку/фокусі на поле, щоб зручно редагувати число
+    document.addEventListener('focus', (e) => {
+        if (e.target.matches('input[name="product-price"], #spec-total-amount-in-uah')) {
+            let val = e.target.value;
+            if (val) {
+                // Прибираємо пробіли для зручності редагування
+                e.target.value = val.replace(/\s/g, '');
+            }
+        }
+    }, true);
 
 
 });

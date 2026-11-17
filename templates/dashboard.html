@@ -273,15 +273,13 @@
     ==================================================================================== -->
   <!--🔶 Блок 3. Контейнер заповнення інформації про товари -->
   <dialog id="modal-add-product">
-    <button type="button" id="btn-close-modal-product" class="btn-close">
-      &times;
-    </button>
+    <div class="modal-header">
+      <h2 id="modal-product-title">Додати/редагувати товар</h2>
+      <button type="button" id="btn-close-modal-product" class="btn-close">×</button>
+    </div>
     <form id="form-add-product">
       <div class="modal-content">
-        <h2 id="modal-product-title">Додати/редагувати товар</h2>
         <input type="hidden" name="product-id" id="product-id" />
-
-        <br />
 
         <label for="product-name"> Назва товару</label>
         <input type="text" name="product-name" id="product-name" class="input-field" />
@@ -297,15 +295,14 @@
 
   <!--🔶 Блок 4. Контейнер заповнення інформації про контрагентів -->
   <dialog id="modal-add-counterparty">
-    <button type="button" id="btn-close-modal-counterparty" class="btn-close">
-      &times;
-    </button>
+    <div class="modal-header">
+      <h2 id="modal-counterparty-title">Контрагент</h2>
+      <button type="button" id="btn-close-modal-counterparty" class="btn-close">×</button>
+    </div>
     <form id="form-add-counterparty">
       <div class="modal-content">
-        <h2 id="modal-counterparty-title"></h2>
         <input type="hidden" name="counterparty-id" id="counterparty-id" />
 
-        <br />
         <label for="counterparty-name">Назва контрагента</label>
         <input type="text" name="counterparty-name" id="counterparty-name" class="input-field" />
         <br />
@@ -329,12 +326,12 @@
 
   <!--🔶 Блок 5. Контейнер заповнення інформації про Договір -->
   <dialog id="modal-add-contract">
-    <button type="button" id="btn-close-modal-contract" class="btn-close">
-      &times;
-    </button>
+    <div class="modal-header">
+      <h2 id="modal-contract-title">Договір</h2>
+      <button type="button" id="btn-close-modal-contract" class="btn-close">×</button>
+    </div>
     <form id="form-add-contract">
       <div class="modal-content">
-        <h2 id="modal-contract-title"></h2>
         <input type="hidden" name="contract-id" id="contract-id" />
 
         <!-- Спільний контейнер-двоколонник -->
@@ -390,6 +387,7 @@
             </div>
           </div>
           <!-- кінець .contract-documents-info -->
+
           <!-- Центральна колонка: Основна інформація договору -->
           <div class="contract-main-info">
             <!-- Реєстраційний номер -->
@@ -400,7 +398,7 @@
 
             <!-- Номер угоди -->
             <div id="box-agreement-number">
-              <label for="agreement-number">Номер угоди</label>
+              <label for="agreement-number">Ном. угоди</label>
               <input type="text" name="agreement-number" id="agreement-number" class="input-field" />
             </div>
 
@@ -427,7 +425,7 @@
               </datalist>
             </div>
 
-            <!-- Замість пустого місця або в 5-й колонці 1-го рядка -->
+            <!-- Кнопка швидкого додавання контрагента -->
             <div id="box-add-counterparty-btn" style="
                   grid-column: 5;
                   grid-row: 1;
@@ -494,7 +492,6 @@
             </div>
 
             <!-- Статус договору -->
-
             <div id="box-contract-stage">
               <label>Статус</label>
               <select name="contract-stage" id="contract-stage">
@@ -574,14 +571,13 @@
 
   <!--🔶 Блок 6. Контейнер заповнення інформації про Специфікацію -->
   <dialog id="modal-add-specification">
-    <button type="button" id="btn-close-modal-specification" class="btn-close">
-      &times;
-    </button>
+    <div class="modal-header">
+      <h2>Специфікація</h2>
+      <button type="button" id="btn-close-modal-specification" class="btn-close">×</button>
+    </div>
     <form id="form-add-specification">
       <div class="modal-content">
-        <h2>Специфікація</h2>
         <input type="hidden" name="specification-id" id="specification-id" />
-        <br />
 
         <!-- Верхній рядок: Валюта, Курс, Загальна сума -->
         <div class="spec-top-row">
@@ -605,7 +601,7 @@
           </div>
 
           <div class="spec-field-group">
-            <label>Загальна сума специфікації в грн.</label>
+            <label>Заг. сума специф. в грн.</label>
             <input type="text" name="spec-total-amount-in-uah" id="spec-total-amount-in-uah" class="input-field"
               readonly />
           </div>
@@ -635,7 +631,6 @@
           </tbody>
         </table>
 
-        <!-- ДОДАЙТЕ ДАТАЛІСТ СЮДИ (ОКРЕМО ПІД ТАБЛИЦЕЮ) -->
         <datalist id="products-list">
           <!-- Сюди JavaScript завантажить варіанти товарів -->
         </datalist>
@@ -664,14 +659,14 @@
 
   <!--🔶 Блок 7. Міні-вікно оплат та відвантажень для рядка товару -->
   <dialog id="modal-pay-ship">
-    <button type="button" id="btn-close-modal-pay-ship" class="btn-close">
-      &times;
-    </button>
-    <div class="modal-content">
+    <div class="modal-header">
       <h3>
         Оплати та Відвантаження:
         <span id="pay-ship-product-name" style="font-weight: normal"></span>
       </h3>
+      <button type="button" id="btn-close-modal-pay-ship" class="btn-close">×</button>
+    </div>
+    <div class="modal-content">
       <input type="hidden" id="current-row-index" />
 
       <table id="pay-ship-table" style="width: 100%; border-collapse: collapse; margin-top: 10px">

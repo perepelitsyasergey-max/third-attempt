@@ -600,32 +600,38 @@ def delete_contract(contract_id):
         return jsonify({'error': 'Договір не знайдено'}), 404
 
     try:
-        # 1. Знаходимо всі специфікації цього договору
+        # 1. Видаляємо всі прикріплені документи договору з бази (та за бажанням файли з диску)
+        documents = ContractDocument.query.filter_by(contract_id=contract.id).all()
+        for doc in documents:
+            # Якщо потрібно також видаляти самі файли з папки на диску, можна розкоментувати:
+            # if doc.file_path and os.path.exists(doc.file_path):
+            #     os.remove(doc.file_path)
+            db.session.delete(doc)
+
+        # 2. Знаходимо всі специфікації цього договору
         specs = Specification.query.filter_by(contract_id=contract.id).all()
         for spec in specs:
-            # 2. Знаходимо всі товари (items) цієї специфікації
+            # 3. Знаходимо всі товари (items) цієї специфікації
             items = SpecificationItem.query.filter_by(specification_id=spec.id).all()
             for item in items:
-                # 3. Видаляємо записи оплат та відвантажень для кожного товару
+                # 4. Видаляємо записи оплат та відвантажень для кожного товару
                 PaymentShippingRecord.query.filter_by(item_id=item.id).delete()
             
-            # 4. Видаляємо товари специфікації
+            # 5. Видаляємо товари специфікації
             SpecificationItem.query.filter_by(specification_id=spec.id).delete()
         
-        # 5. Видаляємо самі специфікації договору
+        # 6. Видаляємо самі специфікації договору
         Specification.query.filter_by(contract_id=contract.id).delete()
 
-        # 6. Тепер, коли все дочірнє сміття видалено, сміливо видаляємо сам договір
-        db.System = db.session.delete(contract) # або просто db.session.delete(contract)
+        # 7. Тепер, коли всі дочірні записи (документи, специфікації тощо) видалено, безпечно видаляємо сам договір
         db.session.delete(contract)
         db.session.commit()
 
-        return jsonify({'message': 'Договір та всі пов’язані специфікації успішно видалено'}), 200
+        return jsonify({'message': 'Договір та всі пов’язані документи і специфікації успішно видалено'}), 200
 
     except Exception as e:
         db.session.rollback()
-        return jsonify({'error': str(e)}), 500
-# -----------------------------------------------------------------------------------------------------------
+        return jsonify({'error': str(e)}), 500# -----------------------------------------------------------------------------------------------------------
 
 # Отримання списку специфікацій для конкретного договору (API)
 @app.route('/api/contracts/<int:contract_id>/specifications', methods=['GET'])
