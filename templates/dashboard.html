@@ -67,6 +67,19 @@
           </select>
         </div>
 
+        <!-- Фільтр за типом договору -->
+        <div id="filter-box-contract-type">
+          <select id="filter-contract-type">
+            <option value="">За типом дог.</option>
+            <option value="buyers">З покупцями</option>
+            <option value="suppliers">З постачальниками</option>
+            <option value="lease">Оренда</option>
+            <option value="financial_aid">Фін. допомога</option>
+            <option value="nda">NDA</option>
+            <option value="memorandum">Меморандум</option>
+          </select>
+        </div>
+
         <!-- Колонка 3: Сортування -->
         <div id="filter-box-sort-date">
           <select id="sort-contracts-date">
@@ -397,7 +410,7 @@
           <div class="contract-main-info">
             <!-- Реєстраційний номер -->
             <div id="box-reg-number-contract">
-              <label for="reg-number-contract">Реєстр. ном. дог.</label>
+              <label for="reg-number-contract">Реєстр. № дог.</label>
               <input type="text" name="reg-number-contract" id="reg-number-contract" class="input-field" />
             </div>
 
@@ -465,7 +478,7 @@
 
             <!-- Автопролонгація договору -->
             <div id="box-auto-prolongation" class="checkbox-container">
-              <label for="auto-prolongation">Автопролонгація договору</label>
+              <label for="auto-prolongation">Автопролонг.</label>
               <input type="checkbox" name="auto-prolongation" id="auto-prolongation" />
             </div>
 

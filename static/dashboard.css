@@ -420,13 +420,31 @@ dialog {
     flex: 2.2;
 }
 
-/* Універсальний стиль для внутрішніх полів */
+/* Уніфікований стиль для внутрішніх полів (аналогічно до фільтрів) */
 .contract-main-info input[type="text"],
 .contract-main-info input[type="date"],
+.contract-main-info input[type="number"],
 .contract-main-info select,
 .contract-main-info textarea {
-    width: 100%;
-    box-sizing: border-box;
+    background-color: #ffffff !important;
+    border: 1px solid #484a4d !important;
+    border-radius: 3px !important;
+    padding: 3px 5px !important;
+    font-size: 13px !important;
+    color: #334155 !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    transition: all 0.2s ease !important;
+}
+
+.contract-main-info input[type="text"]:focus,
+.contract-main-info input[type="date"]:focus,
+.contract-main-info input[type="number"]:focus,
+.contract-main-info select:focus,
+.contract-main-info textarea:focus {
+    border-color: #3b82f6 !important;
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15) !important;
 }
 
 /* 2. Точне позиціонування кожного блока за ID */

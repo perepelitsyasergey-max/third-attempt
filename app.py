@@ -282,6 +282,22 @@ def create_counterparty():
     if not data or not data.get('counterparty-name'):
         return jsonify({'error': "Назва контрагента є обов'язкова"}), 400
 
+    # Отримуємо та очищаємо поля від зайвих пробілів
+    edrpou = (data.get('counterparty-edrpou') or '').strip()
+    ipn = (data.get('counterparty-ipn') or '').strip()
+
+    # Перевірка на дублікат за ЄДРПОУ (якщо поле заповнене)
+    if edrpou:
+        existing_edrpou = Counterparty.query.filter_by(counterparty_edrpou_db=edrpou).first()
+        if existing_edrpou:
+            return jsonify({'error': f'Контрагент із таким ЄДРПОУ вже існує (Назва: {existing_edrpou.counterparty_name_db})'}), 400
+
+    # Перевірка на дублікат за ІПН (якщо поле заповнене)
+    if ipn:
+        existing_ipn = Counterparty.query.filter_by(counterparty_ipn_db=ipn).first()
+        if existing_ipn:
+            return jsonify({'error': f'Контрагент із таким ІПН вже існує (Назва: {existing_ipn.counterparty_name_db})'}), 400
+
 
     # Створення об'єкта та збереження в БД
     new_counterparty = Counterparty (
@@ -470,6 +486,7 @@ def get_contracts():
                 'counterparty_2': i.counterparty_2_db,
                 'contract_date': i.contract_date_db,
                 'end_date': i.end_date_db,
+                'contract_type': i.contract_type_db,
                 'contract_stage': i.contract_stage_db,
                 'user': i.user_db,
                 'is_archived': i.archival_contracts_db,

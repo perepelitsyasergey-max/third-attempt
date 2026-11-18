@@ -1085,6 +1085,13 @@ document.addEventListener('DOMContentLoaded', () => {
             filtered = filtered.filter(i => i.user === selectedUser);
         }
 
+        // 4. Фільтр за типом договору
+        const typeSelect = document.getElementById('filter-contract-type');
+        const selectedType = typeSelect ? typeSelect.value : '';
+        if (selectedType) {
+            filtered = filtered.filter(i => i.contract_type === selectedType);
+        }
+
         // 4. Пошук за текстом (по всіх полях)
         if (searchText) {
             filtered = filtered.filter(i => {
@@ -1302,6 +1309,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     // -----------------------------------------------------------------------------------------------------------------
 
+    // Слухач події зміни значення у випадаючому списку фільтра за ТИПОМ ДОГОВОРУ
+    const filterContractTypeSelect = document.getElementById('filter-contract-type');
+    if (filterContractTypeSelect) {
+        filterContractTypeSelect.addEventListener('change', () => {
+            applyContractFilter();
+        });
+    }
+
+
     // Чітке та контрольоване скидання всіх фільтрів і сортувань
     function resetAllContractFilters() {
         // 1. Очищаємо текстовий пошук
@@ -1343,6 +1359,10 @@ document.addEventListener('DOMContentLoaded', () => {
         // 7. Скидаємо селект валюти
         const filterCurrency = document.getElementById('filter-contract-currency');
         if (filterCurrency) filterCurrency.value = '';
+
+        // 8. Скидаємо селект типу договору
+        const filterType = document.getElementById('filter-contract-type');
+        if (filterType) filterType.value = '';
 
         // Запускаємо оновлення таблиці з повним списком
         applyContractFilter();
@@ -1395,6 +1415,15 @@ document.addEventListener('DOMContentLoaded', () => {
             "without_support": "Діючий (без супроводу)",
             "completed": "Завершений"
         };
+        // Словник для красивого відображення типів договорів
+        const contractTypeTranslations = {
+            "buyers": "З покупцями",
+            "suppliers": "З постачальниками",
+            "lease": "Оренда",
+            "financial_aid": "Фін. допомога",
+            "nda": "NDA",
+            "memorandum": "Меморандум"
+        };
 
         const table = document.createElement('table');
         table.innerHTML = `
@@ -1404,6 +1433,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <th>Реєстр. № дог.</th>
                     <th>Номер угоди</th>
                     <th>Номер договору</th>
+                    <th>Тип договору</th>
                     <th>Контрагент 1</th>
                     <th>Контрагент 2</th>
                     <th>Дата дог.</th>
@@ -1429,12 +1459,16 @@ document.addEventListener('DOMContentLoaded', () => {
             // ПЕРЕКЛАДАЄМО СТАТУС ДЛЯ КОЖНОГО ДОГОВОРУ
             const displayStage = stageTranslations[i.contract_stage] || i.contract_stage || '';
 
+            // Перекладаємо тип договору для таблиці
+            const displayType = contractTypeTranslations[i.contract_type] || i.contract_type || '';
+
             const row = document.createElement('tr');
             row.innerHTML = `
                 <td>${i.id}</td>
                 <td>${i.reg_number || ''}</td>
                 <td>${i.agreement_number || ''}</td>
                 <td>${i.contract_number || ''}</td>
+                <td>${displayType}</td>
                 <td>${i.counterparty_1 || ''}</td>
                 <td>${i.counterparty_2 || ''}</td>
                 <td>${formatDateUA(i.contract_date) || ''}</td>
@@ -2307,7 +2341,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 // 2. А тепер малюємо єдину цілісну картку без розривів тегів
                 html += `
                     <!-- Зовнішній контейнер картки специфікації (сірий блок) -->
-                    <div style="border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; border-radius: 5px; background: #fafafa;">
+                    <div style="border: 2px solid #94a3b8; padding: 12px; margin-bottom: 12px; border-radius: 6px; background: #f7f5de; transition: all 0.2s ease;" 
+     onmouseover="this.style.borderColor='#3b82f6'; this.style.boxShadow='0 4px 6px rgba(0,0,0,0.05)';" 
+     onmouseout="this.style.borderColor='#94a3b8'; this.style.boxShadow='none';">
                         
                         <!-- Верхній рядок картки: назва/номер специфікації та кнопки керування -->
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
@@ -2325,7 +2361,11 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                         
                         <!-- Рядок загальних фінансових підсумків специфікації -->
-                        <small>Загальна сума: ${spec.total_amount} | Оплачено: ${spec.total_paid} | Відвантажено: ${spec.total_shipped}</small>
+                        <div style="margin: 8px 0 10px 0; padding-top: 6px; border-top: 1px solid rgba(0,0,0,0.08); font-size: 13px; display: flex; justify-content: space-between; align-items: center; color: #1e293b;">
+    <span>Заг. сума: <strong style="font-size: 14px; font-weight: 700;">${spec.total_amount}</strong></span>
+    <span style="color: #15803d;">Оплачено: <strong style="font-weight: 600;">${spec.total_paid}</strong></span>
+    <span style="color: #0369a1;">Відвантажено: <strong style="font-weight: 600;">${spec.total_shipped}</strong></span>
+</div>
                         
                         <!-- Таблиця товарів, що входять до цієї специфікації -->
                         <table style="width: 100%; margin-top: 5px; font-size: 13px; border-collapse: collapse;" border="1">
