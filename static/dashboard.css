@@ -63,6 +63,7 @@ dialog {
     padding: 20px;
 }
 
+/* ------------------------------------------------------------------ */
 
 /* =================================================================================================== */
 /* Вкладка ТОВАРИ */
@@ -357,87 +358,11 @@ dialog {
     /* Видалити */
 }
 
-/* --------------------------------------------------------------------------------------- */
+
 
 /* =================================================================================================== */
 /* Вкладка Договори */
 /* =================================================================================================== */
-
-#filter-panel {
-    display: grid;
-    /* Зменшуємо ширину 1-ї колонки, щоб відстань між елементами була рівною та гармонійною */
-    grid-template-columns: 180px 160px 220px minmax(320px, auto) 140px 110px;
-    gap: 8px 12px;
-    align-items: center;
-    background: #fdfdfd;
-    padding: 10px 12px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    margin-bottom: 15px;
-    width: fit-content;
-}
-
-/* Колонка 1: Пошук + Статус */
-#filter-box-search {
-    grid-column: 1;
-    grid-row: 1;
-}
-
-#filter-box-stage {
-    grid-column: 1;
-    grid-row: 2;
-}
-
-/* Колонка 2: Користувач + Валюта */
-#filter-box-user {
-    grid-column: 2;
-    grid-row: 1;
-}
-
-#filter-box-currency {
-    grid-column: 2;
-    grid-row: 2;
-}
-
-/* Колонка 3: Сортування за датами */
-#filter-box-sort-date {
-    grid-column: 3;
-    grid-row: 1;
-}
-
-#filter-box-sort-end-date {
-    grid-column: 3;
-    grid-row: 2;
-}
-
-/* Колонка 4: Періоди дат */
-#filter-box-date-range {
-    grid-column: 4;
-    grid-row: 1;
-}
-
-#filter-box-end-date-range {
-    grid-column: 4;
-    grid-row: 2;
-}
-
-/* Колонка 5: Архів + Скинути фільтри */
-#filter-box-archive {
-    grid-column: 5;
-    grid-row: 1;
-}
-
-#filter-box-reset {
-    grid-column: 5;
-    grid-row: 2;
-}
-
-/* Колонка 6: Експорт тепер у 1 рядок (наприклад, у першому рядку, а другий залишається акуратно порожнім або підлаштованим) */
-#filter-box-export {
-    grid-column: 6;
-    grid-row: 1;
-}
-
 
 /* 1. Робимо модальне вікно договору ширшим, щоб зручно вмістити дві колонки */
 #modal-add-contract {
@@ -667,6 +592,207 @@ dialog {
     cursor: pointer;
 }
 
+/* =================================================================================================== */
+/* Стилізація панелі фільтрів і пошуку (#filter-panel) */
+/* =================================================================================================== */
+#filter-panel {
+    background-color: #f8f9fa !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 8px !important;
+    padding: 16px 20px !important;
+    margin-bottom: 20px !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03) !important;
+
+    display: grid;
+    /* Робимо рівно 4 акуратні колонки оптимальної ширини */
+    grid-template-columns: 200px 200px 220px auto;
+    gap: 12px 18px;
+    align-items: center;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+
+/* Розподіл елементів фільтру по 4 колонках без «дір» */
+#filter-box-search {
+    grid-column: 1;
+    grid-row: 1;
+}
+
+#filter-box-stage {
+    grid-column: 1;
+    grid-row: 2;
+}
+
+#filter-box-user {
+    grid-column: 2;
+    grid-row: 1;
+}
+
+#filter-box-currency {
+    grid-column: 2;
+    grid-row: 2;
+}
+
+#filter-box-sort-date {
+    grid-column: 3;
+    grid-row: 1;
+}
+
+#filter-box-sort-end-date {
+    grid-column: 3;
+    grid-row: 2;
+}
+
+/* Блоки дат обіймають 4-ту колонку */
+#filter-box-date-range {
+    grid-column: 4;
+    grid-row: 1;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: #334155;
+}
+
+#filter-box-end-date-range {
+    grid-column: 4;
+    grid-row: 2;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: #334155;
+}
+
+/* Компактні поля введення дат, щоб вони не розтягували блок */
+#filter-panel input[type="date"] {
+    width: 125px !important;
+}
+
+/* Додатковий рядок або блок для Архіву, Скинути та Експорту розмістимо внизу або компактно */
+#filter-box-archive {
+    grid-column: 1;
+    grid-row: 3;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#filter-box-reset {
+    grid-column: 2;
+    grid-row: 3;
+}
+
+#filter-box-export {
+    grid-column: 4;
+    grid-row: 3;
+    justify-self: end;
+    /* Кнопка експорту гарно вирівняється по правому краю */
+}
+
+/* Універсальний стиль для інпутів і селектів усередині панелі */
+#filter-panel input[type="text"],
+#filter-panel select {
+    background-color: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 6px !important;
+    padding: 6px 10px !important;
+    font-size: 13px !important;
+    color: #334155 !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    transition: all 0.2s ease !important;
+}
+
+#filter-panel input[type="text"]:focus,
+#filter-panel input[type="date"]:focus,
+#filter-panel select:focus {
+    border-color: #3b82f6 !important;
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15) !important;
+}
+
+#filter-panel button {
+    background-color: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    padding: 6px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #334155;
+    cursor: pointer;
+    transition: background-color 0.2s, border-color 0.2s;
+}
+
+#filter-panel button:hover {
+    background-color: #f1f5f9;
+    border-color: #94a3b8;
+}
+
+/* --------------------------------------------------------------------------------------- */
+
+/* Колонка 1: Пошук + Статус */
+#filter-box-search {
+    grid-column: 1;
+    grid-row: 1;
+}
+
+#filter-box-stage {
+    grid-column: 1;
+    grid-row: 2;
+}
+
+/* Колонка 2: Користувач + Валюта */
+#filter-box-user {
+    grid-column: 2;
+    grid-row: 1;
+}
+
+#filter-box-currency {
+    grid-column: 2;
+    grid-row: 2;
+}
+
+/* Колонка 3: Сортування за датами */
+#filter-box-sort-date {
+    grid-column: 3;
+    grid-row: 1;
+}
+
+#filter-box-sort-end-date {
+    grid-column: 3;
+    grid-row: 2;
+}
+
+/* Колонка 4: Періоди дат */
+#filter-box-date-range {
+    grid-column: 4;
+    grid-row: 1;
+}
+
+#filter-box-end-date-range {
+    grid-column: 4;
+    grid-row: 2;
+}
+
+/* Колонка 5: Архів + Скинути фільтри */
+#filter-box-archive {
+    grid-column: 5;
+    grid-row: 1;
+}
+
+#filter-box-reset {
+    grid-column: 5;
+    grid-row: 2;
+}
+
+/* Колонка 6: Експорт тепер у 1 рядок (наприклад, у першому рядку, а другий залишається акуратно порожнім або підлаштованим) */
+#filter-box-export {
+    grid-column: 6;
+    grid-row: 1;
+}
+
 
 /* =================================================================================================== */
 /* Вкладка Специфікації (Модальне вікно) */
@@ -848,3 +974,80 @@ dialog {
 }
 
 /* ====================================================================================== */
+
+
+/* ====================================================================================== */
+/* Стилі для всіх назв вкладок */
+/* ====================================================================================== */
+/* Стилізація верхньої панелі навігації у вигляді акуратної плашки */
+/* Стильна тепла панель навігації */
+#top-bar {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #faf8f5;
+    /* М'який теплий бежево-кремовий відтінок */
+    border: 1px solid #e7e2d8;
+    /* Тепла, м'яка рамка замість холодного сірого */
+    border-radius: 8px;
+    /* Заокруглені кути */
+    padding: 10px 16px;
+    /* Внутрішні відступи */
+    margin-bottom: 20px;
+    /* Відступ знизу до основного контенту */
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+    /* Легка ледь помітна тінь для об'єму */
+}
+
+/* Повертаємо заголовок вкладки на гарну нормальну позицію */
+.tab-header-flex {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 15px;
+    margin-top: 0;
+    /* Жодних зайвих відступів зверху */
+    margin-bottom: 18px;
+    /* Відступ знизу до панелі фільтрів */
+}
+
+.tab-header-flex h2 {
+    margin: 0 !important;
+    font-size: 22px;
+    font-weight: bold;
+    color: #1e293b;
+}
+
+/* ------------------------------------------------------------------------------------------- */
+
+/* Стилізація кнопок вкладок */
+#nav-tabs button {
+    background-color: #ffffff !important;
+    border: 1px solid #b8b2a3 !important;
+    border-radius: 6px !important;
+    padding: 7px 16px !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    color: #1e293b !important;
+    cursor: pointer !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease !important;
+}
+
+/* При наведенні */
+#nav-tabs button:hover {
+    background-color: #f3efe6 !important;
+    border-color: #8c8575 !important;
+    color: #0f172a !important;
+}
+
+/* Постійний стиль для активної вкладки (додається через JS) */
+#nav-tabs button.active {
+    background-color: #4d84fa !important;
+    /* Насичений синій колір */
+    color: #ffffff !important;
+    border-color: #1d4ed8 !important;
+}
+
+/* -------------------------------------------------------------------------------------------------------- */

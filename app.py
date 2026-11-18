@@ -182,6 +182,19 @@ def create_product():
     if not data or not data.get('product-name'):
         return jsonify({'error': "Назва товару є обов'язковою"}), 400
 
+    
+    # Очищення та нормалізація ціни
+    raw_price = data.get('product-price')
+    price_value = 0.0
+    
+    if raw_price is not None and str(raw_price).strip() != '':
+        try:
+            # Видаляємо звичайні пробіли, нерозривні пробіли (\xa0) та замінюємо кому на крапку
+            cleaned_price = str(raw_price).replace('\xa0', '').replace(' ', '').replace(',', '.')
+            price_value = float(cleaned_price)
+        except ValueError:
+            return jsonify({'error': "Неприпустимий формат ціни"}), 400
+    
     # Створення об'єкта та збереження в БД
     new_product = Product(
         product_name_db=data.get('product-name'),

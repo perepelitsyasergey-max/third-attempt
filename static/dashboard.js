@@ -154,7 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ===========================================================================================
 
     // 2.1. Функція перемикання активної вкладки
-    function switchTab(activePane) {
+    function switchTab(activePane, activeBtn) {
         boxTabHome.style.display = "none";
         boxTabContracts.style.display = "none";
         boxTabCounterparties.style.display = "none";
@@ -163,26 +163,35 @@ document.addEventListener('DOMContentLoaded', () => {
         if (activePane) {
             activePane.style.display = "block";
         }
+
+        // Знімаємо клас 'active' з усіх кнопок вкладок
+        const allTabButtons = document.querySelectorAll('#nav-tabs button');
+        allTabButtons.forEach(btn => btn.classList.remove('active'));
+
+        // Додаємо клас 'active' тій кнопці, яку щойно натиснули
+        if (activeBtn) {
+            activeBtn.classList.add('active');
+        }
     }
     // -----------------------------------------------------------------------------------------------
 
     // 2.2. Обробники подій для кнопок вкладок та початкова активація
     btnTabHome.addEventListener("click", function () {
-        switchTab(boxTabHome);
+        switchTab(boxTabHome, this);
     });
 
     btnTabContracts.addEventListener("click", function () {
-        switchTab(boxTabContracts);
+        switchTab(boxTabContracts, this);
         loadContracts();
     });
 
     btnTabCounterparties.addEventListener("click", function () {
-        switchTab(boxTabCounterparties);
-        loadCounterparties()
+        switchTab(boxTabCounterparties, this);
+        loadCounterparties();
     });
 
     btnTabProducts.addEventListener("click", function () {
-        switchTab(boxTabProducts);
+        switchTab(boxTabProducts, this);
         loadProducts();
     });
     // -----------------------------------------------------------------------------------------------
@@ -237,17 +246,18 @@ document.addEventListener('DOMContentLoaded', () => {
     // 3.5. Функція збору даних з форми товару
     function getProductFormData() {
 
-        // Збираємо всі поля форми (з атрибутом name) у спеціальний об'єкт FormData
+        // Збираємо всі поля форми у спеціальний об'єкт FormData
         const formData = new FormData(formAddProduct);
-
-        // formData.entries() розпаковує дані у список пар [ключ, значення],
-        // a Object.fromEntries() збирає їх у звичайний об'єкт JavaScript { ключ: значення }
         const productData = Object.fromEntries(formData.entries());
 
-        // Замінюємо кому на крапку в полі ціни, якщо воно заповнене (бо програма здійснює прорахунки тільки з крапкою)
-        if (productData.price) {
-            productData.price = productData.price.replace(',', '.');
+        // Нормалізуємо ціну (підтримуємо як 'price', так і 'product-price')
+        const priceKey = productData.hasOwnProperty('product-price') ? 'product-price' : 'price';
+
+        if (productData[priceKey]) {
+            // Видаляємо пробіли, нерозривні пробіли (\xa0) та замінюємо кому на крапку
+            productData[priceKey] = productData[priceKey].toString().replace(/\s/g, '').replace(',', '.');
         }
+
         return productData;
     }
     // -----------------------------------------------------------------------------------------------
