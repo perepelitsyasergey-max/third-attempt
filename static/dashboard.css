@@ -318,7 +318,7 @@ dialog {
 
 #contracts-list-container th:nth-child(11),
 #contracts-list-container td:nth-child(11) {
-    width: 85px;
+    width: 46px;
     text-align: right;
     /* Сума договору */
 }
@@ -818,7 +818,7 @@ dialog {
 
 #modal-add-specification {
     width: 95%;
-    max-width: 1000px;
+    max-width: 1300px;
     border: 1px solid #ccc;
     border-radius: 8px;
 

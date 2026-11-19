@@ -1761,10 +1761,16 @@ document.addEventListener('DOMContentLoaded', () => {
                             const nameInput = row.querySelector('input[name="product-name"]');
                             const qtyInput = row.querySelector('input[name="product-qty"]');
                             const priceInput = row.querySelector('input[name="product-price"]');
+                            // НОВІ ПОЛЯ ДАТ: знаходимо інпути дат у рядку
+                            const payDeadlineInput = row.querySelector('input[name="product-pay-deadline"]');
+                            const shipDeadlineInput = row.querySelector('input[name="product-ship-deadline"]');
 
                             if (nameInput) nameInput.value = item.productName || '';
                             if (qtyInput) qtyInput.value = item.productQty || '';
                             if (priceInput) priceInput.value = item.productPrice || '';
+                            // Заповнюємо дати з присланого з бекенда об'єкта item
+                            if (payDeadlineInput) payDeadlineInput.value = item.payDeadline || '';
+                            if (shipDeadlineInput) shipDeadlineInput.value = item.shipDeadline || '';
 
                             // Заповнюємо ставку ПДВ, якщо вона є
                             const vatSelect = row.querySelector('select[name="product-vat"]');
@@ -2027,6 +2033,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 <span class="product-cost">0.00</span>
             </td>
             <td>
+                <input type="date" name="product-pay-deadline" class="input-field" value="${productData && productData.payDeadline ? productData.payDeadline : ''}" />
+            </td>
+            <td>
+                <input type="date" name="product-ship-deadline" class="input-field" value="${productData && productData.shipDeadline ? productData.shipDeadline : ''}" />
+            </td>
+            <td>
                 <span class="payment-shipping-info">💳 0.00 | 📦 0.00</span>
             </td>
             <td>
@@ -2198,6 +2210,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const productVat = row.querySelector('select[name="product-vat"]')?.value || '';
 
+            // Збираємо значення нових полів дат
+            const payDeadline = row.querySelector('input[name="product-pay-deadline"]')?.value || '';
+            const shipDeadline = row.querySelector('input[name="product-ship-deadline"]')?.value || '';
+
             // Збираємо збережені записи оплат та відвантажень напряму з властивості рядка та теж їх очищаємо
             let payShipRecords = row._payShipRecords || [];
             payShipRecords = payShipRecords.map(rec => ({
@@ -2213,6 +2229,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     productQty,
                     productPrice,
                     productVat,
+                    payDeadline,
+                    shipDeadline,
                     payShipRecords
                 });
             }
@@ -2328,15 +2346,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 // 1. Спочатку генеруємо рядки товарів специфікації в окрему змінну
-                const itemsHtml = spec.items.map(item => `
-                    <tr>
-                        <td>${item.product_name}</td>
-                        <td>${item.price}</td>
-                        <td>${item.qty}</td>
-                        <td>${item.cost}</td>
-                        <td>${item.paid} / ${item.shipped}</td>
-                    </tr>
-                `).join('');
+                const itemsHtml = spec.items.map(item => {
+                    const totalCost = parseFloat(item.cost) || 0;
+                    const itemPaid = parseFloat(item.paid) || 0;
+                    const itemShipped = parseFloat(item.shipped) || 0;
+
+                    const payStyle = getDeadlineStyle(item.pay_deadline, itemPaid, totalCost);
+                    const shipStyle = getDeadlineStyle(item.ship_deadline, itemShipped, totalCost);
+
+                    return `
+                        <tr>
+                            <td>${item.product_name}</td>
+                            <td>${item.price}</td>
+                            <td>${item.qty}</td>
+                            <td>${item.cost}</td>
+                            <td><span style="${payStyle}">${formatDateUA(item.pay_deadline) || ''}</span></td>
+                            <td><span style="${shipStyle}">${formatDateUA(item.ship_deadline) || ''}</span></td>
+                            <td>${item.paid} / ${item.shipped}</td>
+                        </tr>
+                    `;
+                }).join('');
 
                 // 2. А тепер малюємо єдину цілісну картку без розривів тегів
                 html += `
@@ -2377,6 +2406,8 @@ document.addEventListener('DOMContentLoaded', () => {
                                     <th>Ціна</th>
                                     <th>Кількість</th>
                                     <th>Загальна сума</th>
+                                    <th>Крайня дата опл.</th>
+                                    <th>Крайня дата пост.</th>
                                     <th>Оплачено / Відвантажено</th>
                                 </tr>
                             </thead>
@@ -2403,6 +2434,38 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     // ------------------------------------------------------------------------------------------------------------
+
+    // 6.18.1. Допоміжна функція для визначення стилю дедлайну
+    function getDeadlineStyle(deadlineStr, currentFactSum, totalCost) {
+        if (!deadlineStr) return '';
+
+        if (parseFloat(currentFactSum) >= parseFloat(totalCost)) {
+            return '';
+        }
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const deadlineDate = new Date(deadlineStr);
+        if (isNaN(deadlineDate.getTime())) return '';
+        deadlineDate.setHours(0, 0, 0, 0);
+
+        const diffTime = deadlineDate - today;
+        const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+
+        // 1. Прострочено -> Яскраво-червоний
+        if (diffDays < 0) {
+            return 'color: #ee0d0d; font-weight: bold;'; // Темніший, насичений червоний
+        }
+
+        // 2. Менше або рівно 3 дні -> Насичено-помаранчевий (темніший, чітко видно різницю)
+        if (diffDays <= 3) {
+            return 'color: #f87846; font-weight: bold;';
+        }
+
+        return '';
+    }
+    // ---------------------------------------------------------------------------------------------------
 
     // 6.19. Прив'язка подій до кнопок керування специфікаціями (Редагувати / Видалити)
     function attachSpecificationActionEvents(container, contractId) {

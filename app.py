@@ -99,6 +99,8 @@ class SpecificationItem(db.Model):
     product_qty_db = db.Column(db.Numeric(10, 2), nullable=False, default=0.00)  # Кількість товару
     product_price_db = db.Column(db.Numeric(10, 2), nullable=False, default=0.00)  # Ціна за одиницю
     product_vat_db = db.Column(db.String(50), nullable=True)  # Ставка ПДВ (з ПДВ / без ПДВ)
+    pay_deadline_db = db.Column(db.String(50), nullable=True)   # <--- НОВЕ ПОЛЕ: Крайня дата оплати
+    ship_deadline_db = db.Column(db.String(50), nullable=True)  # <--- НОВЕ ПОЛЕ: Крайня дата поставки
 
 
 # 2.5. Записи оплат та відвантажень для кожного рядка товару
@@ -570,7 +572,9 @@ def create_specification(contract_id):
             product_name_db=item.get('productName'),
             product_qty_db=item.get('productQty') or 0,
             product_price_db=item.get('productPrice') or 0,
-            product_vat_db=item.get('productVat')
+            product_vat_db=item.get('productVat'),
+            pay_deadline_db=item.get('payDeadline'),
+            ship_deadline_db=item.get('shipDeadline')
         )
         db.session.add(new_item)
         db.session.flush()  # Отримуємо ID рядка товару
@@ -583,7 +587,9 @@ def create_specification(contract_id):
                 pay_date_db=rec.get('payDate'),
                 pay_sum_db=rec.get('paySum') or 0,
                 ship_date_db=rec.get('shipDate'),
-                ship_sum_db=rec.get('shipSum') or 0
+                ship_sum_db=rec.get('shipSum') or 0,
+                pay_deadline_db=item.get('payDeadline'),
+                ship_deadline_db=item.get('shipDeadline')
             )
             db.session.add(new_record)
 
@@ -690,6 +696,8 @@ def get_contract_specifications(contract_id):
                 'qty': float(item.product_qty_db or 0),
                 'price': float(item.product_price_db or 0),
                 'cost': float(item.product_qty_db or 0) * float(item.product_price_db or 0),
+                'pay_deadline': item.pay_deadline_db or '',
+                'ship_deadline': item.ship_deadline_db or '',
                 'paid': item_paid,
                 'shipped': item_shipped
             })
@@ -754,6 +762,8 @@ def get_specification(spec_id):
             'productQty': float(item.product_qty_db or 0),
             'productPrice': float(item.product_price_db or 0),
             'productVat': item.product_vat_db,
+            'payDeadline': item.pay_deadline_db or '',   # <--- Відправляємо на фронтенд
+            'shipDeadline': item.ship_deadline_db or '', # <--- Відправляємо на фронтенд
             'payShipRecords': records_data
         })
 
@@ -808,7 +818,9 @@ def update_specification(spec_id):
             product_name_db=item.get('productName'),
             product_qty_db=item.get('productQty') or 0,
             product_price_db=item.get('productPrice') or 0,
-            product_vat_db=item.get('productVat')
+            product_vat_db=item.get('productVat'),
+            pay_deadline_db=item.get('payDeadline'),
+            ship_deadline_db=item.get('shipDeadline')
         )
         db.session.add(new_item)
         db.session.flush()
@@ -820,7 +832,7 @@ def update_specification(spec_id):
                 pay_date_db=rec.get('payDate'),
                 pay_sum_db=rec.get('paySum') or 0,
                 ship_date_db=rec.get('shipDate'),
-                ship_sum_db=rec.get('shipSum') or 0
+                ship_sum_db=rec.get('shipSum') or 0,                
             )
             db.session.add(new_record)
 
