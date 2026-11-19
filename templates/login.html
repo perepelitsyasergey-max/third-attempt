@@ -3,25 +3,47 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <title>Вхід до системи</title>
     <link
       rel="stylesheet"
       href="{{ url_for('static', filename='login.css') }}"
     />
   </head>
   <body>
-    <div id="login_container">
-      <form id="login-form">
-        <label for="user-name">Логін</label>
-        <input type="text" id="user-name" name="user_name" />
-        <br />
+    <div class="login-circle" id="loginContainer">
+      <!-- Блок повідомлення про успіх (опціонально) -->
+      <div class="success-msg" id="successMsg" style="display: none">
+        <h2>Успішний вхід!</h2>
+      </div>
 
-        <label for="user-password">Пароль</label>
-        <input type="password" id="user-password" name="user_password" />
-        <br />
+      <div class="form-content" id="formContent">
+        <h2>SIGN IN</h2>
 
-        <button type="submit">Вхід</button>
-      </form>
+        <form id="login-form">
+          <div class="input-group">
+            <input
+              type="text"
+              id="user-name"
+              name="user_name"
+              placeholder="Username"
+              required
+              autocomplete="off"
+            />
+          </div>
+
+          <div class="input-group">
+            <input
+              type="password"
+              id="user-password"
+              name="user_password"
+              placeholder="Password"
+              required
+            />
+          </div>
+
+          <button type="submit" class="btn-submit">Login</button>
+        </form>
+      </div>
     </div>
 
     <script src="{{ url_for('static', filename='login.js') }}"></script>

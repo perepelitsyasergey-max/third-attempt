@@ -120,6 +120,8 @@ class ContractDocument(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     contract_id = db.Column(db.Integer, db.ForeignKey('contracts.id'), nullable=False)
+    # 📌 ДОДАЄМО ЗВ'ЯЗОК ЗІ СПЕЦИФІКАЦІЄЮ (може бути порожнім, якщо документ прив'язаний напряму до договору)
+    specification_id = db.Column(db.Integer, db.ForeignKey('specifications.id', ondelete='CASCADE'), nullable=True)
     doc_type_db = db.Column(db.String(50), nullable=False)     # Тип (dohovir, akt_posluh, vydatkova, rakhunok тощо)
     file_name_db = db.Column(db.String(255), nullable=False)   # Оригінальна назва файлу або збережена назва
     file_path_db = db.Column(db.String(500), nullable=False)   # Шлях до файлу на сервері
@@ -702,6 +704,9 @@ def get_contract_specifications(contract_id):
                 'shipped': item_shipped
             })
 
+        # Отримуємо документи, прив'язані до цієї специфікації
+        spec_docs = ContractDocument.query.filter_by(specification_id=spec.id).all()
+        docs_data = [{'id': d.id, 'doc_type': d.doc_type_db, 'file_name': d.file_name_db, 'file_path': d.file_path_db} for d in spec_docs]
         # Рахуємо загальну вартість у валюті специфікації (без урахування курсу)
         spec_currency_total = sum(float(item.product_qty_db or 0) * float(item.product_price_db or 0) for item in items)
 
@@ -713,7 +718,8 @@ def get_contract_specifications(contract_id):
             'total_amount': float(spec.spec_total_amount_db or 0), # Це залишається для гривень (з курсом)
             'total_paid': spec_total_paid,
             'total_shipped': spec_total_shipped,
-            'items': items_data
+            'items': items_data,
+            'documents': docs_data  # <--- Передаємо документи на фронтенд
         })
 
     return jsonify(specs_list), 200
@@ -842,8 +848,8 @@ def update_specification(spec_id):
 # 6.7. Отримання списку документів конкретного договору (API GET)
 @app.route('/api/contracts/<int:contract_id>/documents', methods=['GET'])
 def get_contract_documents(contract_id):
-    # Отримуємо документи і сортуємо їх: спочатку за типом, потім за назвою файлу
-    docs = ContractDocument.query.filter_by(contract_id=contract_id).all()
+    # Отримуємо документи які завантажені під самий договір безпосередньо
+    docs = ContractDocument.query.filter_by(contract_id=contract_id, specification_id=None).all()
     
     # Створюємо логічний порядок для типів документів
     type_priority = {
@@ -973,6 +979,89 @@ def download_document_by_id(doc_id):
     
     return send_from_directory(directory, filename)
 # --------------------------------------------------------------------------------------------------
+
+# =================================================================================================
+#    ДОКУМЕНТИ СПЕЦИФІКАЦІЙ (НОВІ МАРШРУТИ)
+# =================================================================================================
+
+# 1. Отримання списку документів конкретної специфікації (API GET)
+@app.route('/api/specifications/<int:spec_id>/documents', methods=['GET'])
+def get_specification_documents(spec_id):
+    docs = ContractDocument.query.filter_by(specification_id=spec_id).all()
+    
+    docs_list = []
+    for d in docs:
+        docs_list.append({
+            'id': d.id,
+            'doc_type': d.doc_type_db,
+            'file_name': d.file_name_db,
+            'file_path': d.file_path_db
+        })
+    return jsonify(docs_list), 200
+# -------------------------------------------------------------------------------------------------
+
+# 2. Завантаження нового документа до конкретної специфікації (API POST)
+@app.route('/api/specifications/<int:spec_id>/documents', methods=['POST'])
+def upload_specification_document(spec_id):
+    spec = Specification.query.get_or_404(spec_id)
+    contract = Contract.query.get_or_404(spec.contract_id)
+    
+    if 'file' not in request.files:
+        return jsonify({'error': 'Файл не передано'}), 400
+    
+    file = request.files['file']
+    doc_type = request.form.get('doc_type', 'dohovir')
+
+    if file.filename == '':
+        return jsonify({'error': 'Файл не обрано'}), 400
+
+    # Визначаємо реєстраційний номер договору для батьківської папки
+    reg_number = contract.reg_number_contract_db or f"BR-{contract.id}_26"
+    safe_folder_name = reg_number.replace('/', '_').replace('\\', '_')
+
+    # Шлях до папки договору: contracts_archive/БР-7_26
+    contract_folder = os.path.join(MAIN_STORAGE, safe_folder_name)
+    if not os.path.exists(contract_folder):
+        os.makedirs(contract_folder)
+
+    # 📌 СТВОРЮЄМО ПІДПАПКУ СПЕЦИФІКАЦІЇ: spec_<id> (наприклад, spec_15)
+    spec_folder_name = f"spec_{spec.id}"
+    spec_folder_path = os.path.join(contract_folder, spec_folder_name)
+    if not os.path.exists(spec_folder_path):
+        os.makedirs(spec_folder_path)
+
+    # Формуємо назву файлу
+    file_ext = os.path.splitext(file.filename)[1]
+    base_name = f"{safe_folder_name}_spec{spec.id}_{doc_type}"
+    new_file_name = f"{base_name}{file_ext}"
+    target_path = os.path.join(spec_folder_path, new_file_name)
+
+    # Захист від дублікатів імен файлів
+    counter = 2
+    while os.path.exists(target_path):
+        new_file_name = f"{base_name}_{counter}{file_ext}"
+        target_path = os.path.join(spec_folder_path, new_file_name)
+        counter += 1
+
+    file.save(target_path)
+
+    # Зберігаємо інформацію в базу даних (зв'язуємо і з договором, і зі специфікацією)
+    new_doc = ContractDocument(
+        contract_id=contract.id,
+        specification_id=spec.id,
+        doc_type_db=doc_type,
+        file_name_db=new_file_name,
+        file_path_db=f"/contracts_archive/{safe_folder_name}/{spec_folder_name}/{new_file_name}"
+    )
+    db.session.add(new_doc)
+    db.session.commit()
+
+    return jsonify({
+        'message': 'Документ специфікації успішно завантажено!',
+        'id': new_doc.id,
+        'file_name': new_file_name
+    }), 201
+# --------------------------------------------------------------------------------------------------------
 
 
 

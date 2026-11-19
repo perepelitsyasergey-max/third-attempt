@@ -2367,10 +2367,21 @@ document.addEventListener('DOMContentLoaded', () => {
                     `;
                 }).join('');
 
+                // Генерація списку документів специфікації
+                let docsHtml = '<p style="font-size: 12px; color: #64748b; margin: 4px 0;">Документи відсутні</p>';
+                if (spec.documents && spec.documents.length > 0) {
+                    docsHtml = spec.documents.map(doc => `
+                        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12px; background: #fff; padding: 4px 8px; margin-bottom: 3px; border: 1px solid #cbd5e1; border-radius: 4px;">
+                            <span><strong>[${doc.doc_type}]</strong> <a href="/api/documents/${doc.id}/download" target="_blank">${doc.file_name}</a></span>
+                            <button type="button" class="btn-delete-spec-doc" data-id="${doc.id}" style="color: red; border: none; background: none; cursor: pointer; font-size: 11px;">Видалити</button>
+                        </div>
+                    `).join('');
+                }
+
                 // 2. А тепер малюємо єдину цілісну картку без розривів тегів
                 html += `
                     <!-- Зовнішній контейнер картки специфікації (сірий блок) -->
-                    <div style="border: 2px solid #94a3b8; padding: 12px; margin-bottom: 12px; border-radius: 6px; background: #f7f5de; transition: all 0.2s ease;" 
+                    <div style="border: 2px solid #94a3b8; padding: 12px; margin-bottom: 12px; border-radius: 6px; background: #f1f0df; transition: all 0.2s ease;" 
      onmouseover="this.style.borderColor='#3b82f6'; this.style.boxShadow='0 4px 6px rgba(0,0,0,0.05)';" 
      onmouseout="this.style.borderColor='#94a3b8'; this.style.boxShadow='none';">
                         
@@ -2415,6 +2426,26 @@ document.addEventListener('DOMContentLoaded', () => {
                                 ${itemsHtml}
                             </tbody>
                         </table>
+
+                        <!-- БЛОК ДОКУМЕНТІВ СПЕЦИФІКАЦІЇ -->
+                        <div style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed #94a3b8;">
+                            <div style="font-size: 12px; font-weight: bold; margin-bottom: 4px;">Документи специфікації:</div>
+                            <div id="spec-docs-list-${spec.id}">
+                                ${docsHtml}
+                            </div>
+                            <!-- Форма завантаження документа до специфікації -->
+                            <div style="display: flex; gap: 6px; align-items: center; margin-top: 6px;">
+                                <select id="spec-doc-type-${spec.id}" style="font-size: 11px; padding: 2px;">
+                                    <option value="dohovir">Договір</option>
+                                    <option value="vydatkova">Видаткова</option>
+                                    <option value="rakhunok">Рахунок</option>
+                                    <option value="akt_posluh">Акт</option>
+                                    <option value="inshe">Інше</option>
+                                </select>
+                                <input type="file" id="spec-file-input-${spec.id}" style="font-size: 11px;">
+                                <button type="button" class="btn-upload-spec-doc" data-spec-id="${spec.id}" style="font-size: 11px; padding: 2px 8px; cursor: pointer;">Завантажити</button>
+                            </div>
+                        </div>
                     </div>
                 `;
             });
@@ -2427,6 +2458,8 @@ document.addEventListener('DOMContentLoaded', () => {
             // Виклик функції прив'язки подій до кнопок
             attachSpecificationActionEvents(container, contractId);
 
+            attachSpecificationDocumentEvents(container, contractId); // Підключаємо обробники подій для файлів
+
         } catch (error) {
             console.error('Помилка:', error);
             container.innerHTML = '<p style="color: red;">Не вдалося завантажити специфікації.</p>';
@@ -2435,7 +2468,65 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     // ------------------------------------------------------------------------------------------------------------
 
-    // 6.18.1. Допоміжна функція для визначення стилю дедлайну
+    // 6.18.1. Допоміжна функція для обробки завантаження та видалення документів специфікації
+    function attachSpecificationDocumentEvents(container, contractId) {
+        // Завантаження файлу
+        container.querySelectorAll('.btn-upload-spec-doc').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const specId = btn.getAttribute('data-spec-id');
+                const fileInput = document.getElementById(`spec-file-input-${specId}`);
+                const typeSelect = document.getElementById(`spec-doc-type-${specId}`);
+
+                if (!fileInput.files || fileInput.files.length === 0) {
+                    alert('Будь ласка, виберіть файл для завантаження');
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append('file', fileInput.files[0]);
+                formData.append('doc_type', typeSelect.value);
+
+                try {
+                    const res = await fetch(`/api/specifications/${specId}/documents`, {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    if (res.ok) {
+                        loadContractSpecifications(contractId); // Перезавантажуємо специфікації, щоб оновити список
+                    } else {
+                        const err = await res.json();
+                        alert(err.error || 'Помилка завантаження файлу');
+                    }
+                } catch (e) {
+                    console.error(e);
+                    alert('Помилка мережі при завантаженні');
+                }
+            });
+        });
+
+        // Видалення файлу
+        container.querySelectorAll('.btn-delete-spec-doc').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                if (!confirm('Видалити цей документ специфікації?')) return;
+                const docId = btn.getAttribute('data-id');
+
+                try {
+                    const res = await fetch(`/api/documents/${docId}`, { method: 'DELETE' });
+                    if (res.ok) {
+                        loadContractSpecifications(contractId);
+                    } else {
+                        alert('Помилка видалення документа');
+                    }
+                } catch (e) {
+                    console.error(e);
+                }
+            });
+        });
+    }
+    // ------------------------------------------------------------------------------------------------------
+    
+    // 6.18.2. Допоміжна функція для визначення стилю дедлайну
     function getDeadlineStyle(deadlineStr, currentFactSum, totalCost) {
         if (!deadlineStr) return '';
 

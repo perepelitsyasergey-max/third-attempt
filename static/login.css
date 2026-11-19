@@ -1,13 +1,91 @@
 body {
+    margin: 0;
+    padding: 0;
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    margin: 0;
+    background-color: #e4ebf5;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-.login-container {
+/* Основне кругле неоморфне вікно з чіткішими тінями та контуром */
+.login-circle {
+    width: 400px;
+    height: 400px;
+    background: #e4ebf5;
+    border-radius: 50%;
+    /* Чіткіші зовнішні тіні */
+    box-shadow: 14px 14px 25px #b8c4d8, -14px -14px 25px #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.8);
     display: flex;
-    flex-direction: column;
-    gap: 8px;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.form-content {
+    width: 75%;
+    text-align: center;
+}
+
+.form-content h2 {
+    margin-bottom: 25px;
+    color: #2d3748;
+    font-size: 22px;
+    letter-spacing: 1px;
+    font-weight: 700;
+}
+
+/* Вдавлені поля введення з чітким внутрішнім контуром */
+.input-group {
+    margin-bottom: 16px;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 12px 18px;
+    border: 1px solid #d1d9e6; /* Чітка зовнішня рамка для поля */
+    outline: none;
+    background: #e4ebf5;
+    font-size: 14px;
+    color: #2d3748;
+    border-radius: 30px;
+    /* Чіткіші внутрішні тіні (менший розмив, більший контраст) */
+    box-shadow: inset 5px 5px 8px #b8c4d8, inset -5px -5px 8px #ffffff;
+    box-sizing: border-box;
+    transition: all 0.2s ease;
+}
+
+.input-group input:focus {
+    border-color: #3b82f6;
+    box-shadow: inset 3px 3px 6px #b8c4d8, inset -3px -3px 6px #ffffff;
+}
+
+/* Об'ємна кнопка входу з чіткими гранями */
+.btn-submit {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    outline: none;
+    background: #e4ebf5;
+    color: #2563eb;
+    font-size: 15px;
+    font-weight: bold;
+    border-radius: 30px;
+    cursor: pointer;
+    /* Випукла тінь з чіткішим контрастом */
+    box-shadow: 6px 6px 12px #b8c4d8, -6px -6px 12px #ffffff;
+    transition: all 0.15s ease;
+    margin-top: 10px;
+}
+
+.btn-submit:hover {
+    color: #1d4ed8;
+}
+
+.btn-submit:active {
+    /* Ефект натискання кнопкою всередину */
+    box-shadow: inset 4px 4px 8px #b8c4d8, inset -4px -4px 8px #ffffff;
 }
