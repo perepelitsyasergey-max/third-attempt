@@ -178,6 +178,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 2.2. Обробники подій для кнопок вкладок та початкова активація
     btnTabHome.addEventListener("click", function () {
         switchTab(boxTabHome, this);
+        loadDashboardDeadlines(); // <--- Викликаємо завантаження дедлайнів при переході на Головну
     });
 
     btnTabContracts.addEventListener("click", function () {
@@ -198,8 +199,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // 2.3. Початкова активація вкладки "Товари" при завантаженні сторінки
-    switchTab(boxTabContracts);
+    switchTab(boxTabHome);
     loadContracts();
+    loadDashboardDeadlines();
     // -----------------------------------------------------------------------------------------------
 
     // Активація захисту полів контрагентів: дозволяє швидкий пошук через datalist,
@@ -3031,6 +3033,106 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     }
+    // ---------------------------------------------------------------------------------------------
+
+    // Функція завантаження та рендерингу дедлайнів на головній сторінці
+function loadDashboardDeadlines() {
+    const container = document.getElementById('dashboard-deadlines-container');
+    if (!container) return;
+
+    fetch('/api/dashboard/deadlines')
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                container.innerHTML = `<p style="color: red;">Помилка: ${data.error}</p>`;
+                return;
+            }
+
+            if (data.length === 0) {
+                container.innerHTML = `<p style="color: #64748b; font-size: 13px;">Наразі немає активних дедлайнів чи контрольних дат.</p>`;
+                document.getElementById('stat-expired').innerText = '0';
+                document.getElementById('stat-upcoming').innerText = '0';
+                document.getElementById('stat-total').innerText = '0';
+                return;
+            }
+
+            let expiredCount = 0;
+            let upcomingCount = 0;
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            let html = `
+                <table class="deadline-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 15%;">Категорія</th>
+                            <th style="width: 15%;">Об'єкт / Договір</th>
+                            <th style="width: 25%;">Контрагент</th>
+                            <th style="width: 25%;">Деталі</th>
+                            <th style="width: 12%;">Дата</th>
+                            <th style="width: 8%;">Статус</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            data.forEach(item => {
+                const itemDate = new Date(item.date_obj);
+                itemDate.setHours(0, 0, 0, 0);
+                
+                const diffTime = itemDate - today;
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                let badgeHtml = '';
+                if (diffDays < 0) {
+                    expiredCount++;
+                    badgeHtml = `<span class="badge-expired">Прострочено (${Math.abs(diffDays)} дн.)</span>`;
+                } else if (diffDays <= 7) {
+                    upcomingCount++;
+                    badgeHtml = `<span class="badge-warning">Спливає (${diffDays} дн.)</span>`;
+                } else {
+                    badgeHtml = `<span class="badge-normal">В нормі (+${diffDays} дн.)</span>`;
+                }
+
+                html += `
+                    <tr>
+                        <td style="font-weight: 500; text-align: center;">${item.category_label}</td>
+                        <td style="text-align: center;"><a href="#" class="deadline-contract-link" data-contract-id="${item.contract_id}" style="color: #2563eb; text-decoration: none; font-weight: bold;" title="Відкрити договір">${item.reg_number}</a></td>
+                        <td>${item.counterparty}</td>
+                        <td>${item.details}</td>
+                        <td style="text-align: center; font-weight: bold;">${item.date}</td>
+                        <td style="text-align: center;">${badgeHtml}</td>
+                    </tr>
+                `;
+            });
+
+            html += `</tbody></table>`;
+            container.innerHTML = html;
+
+            // Оновлюємо міні-статистику зверху
+            document.getElementById('stat-expired').innerText = expiredCount;
+            document.getElementById('stat-upcoming').innerText = upcomingCount;
+            document.getElementById('stat-total').innerText = data.length;
+        })
+        .catch(err => {
+            console.error('Помилка завантаження дедлайнів:', err);
+            container.innerHTML = `<p style="color: red;">Не вдалося завантажити дані дедлайнів.</p>`;
+        });
+}
+// -----------------------------------------------------------------------------------------------------------------
+
+// Слухач кліків по номерах договорів у таблиці дедлайнів
+document.addEventListener('click', (e) => {
+    if (e.target.matches('.deadline-contract-link')) {
+        e.preventDefault();
+        const contractId = e.target.getAttribute('data-contract-id');
+        if (contractId) {
+            loadContractDetails(contractId);
+        }
+    }
+});
+// --------------------------------------------------------------------------------------------------------------
+
 
 
     // ===========================================================================================
