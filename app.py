@@ -589,9 +589,8 @@ def create_specification(contract_id):
                 pay_date_db=rec.get('payDate'),
                 pay_sum_db=rec.get('paySum') or 0,
                 ship_date_db=rec.get('shipDate'),
-                ship_sum_db=rec.get('shipSum') or 0,
-                pay_deadline_db=item.get('payDeadline'),
-                ship_deadline_db=item.get('shipDeadline')
+                ship_sum_db=rec.get('shipSum') or 0
+
             )
             db.session.add(new_record)
 
