@@ -534,29 +534,41 @@
             </div>
 
             <!-- Блок фінансові результати -->
-            <div id="box-financial-results">
-              <div id="box-sum">
-                <label>Сума дог.:</label>
-                <label>Грн (Сума): <span id="sum-uah">0.00</span></label>
-                <label>USD (Сума): <span id="sum-usd">0.00</span></label>
-                <label>EUR (Сума): <span id="sum-eur">0.00</span></label>
+            <div id="box-financial-results" style="display: flex; gap: 15px; margin-bottom: 20px;">
+              <!-- Блок UAH (Гривня) - Зеленуватий відтінок -->
+              <div id="box-currency-uah"
+                style="flex: 1; border: 1px solid #cbd5e1; padding: 12px; border-radius: 6px; background: #f0fdf4;">
+                <label style="font-weight: bold; display: block; margin-bottom: 8px; color: #166534;">UAH
+                  (Гривня):</label>
+                <div style="display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: #1e293b;">
+                  <label>Сума дог.: <span id="sum-uah">0,00</span></label>
+                  <label>Оплачено: <span id="paid-uah">0,00</span></label>
+                  <label>Відвантажено: <span id="shipped-uah">0,00</span></label>
+                </div>
               </div>
 
-              <div id="box-paid">
-                <label>Оплачено:</label>
-                <label>Грн (Оплачено): <span id="paid-uah">0.00</span></label>
-                <label>USD (Оплачено): <span id="paid-usd">0.00</span></label>
-                <label>EUR (Оплачено): <span id="paid-eur">0.00</span></label>
+              <!-- Блок USD (Долар) - Блакитнуватий відтінок -->
+              <div id="box-currency-usd"
+                style="flex: 1; border: 1px solid #cbd5e1; padding: 12px; border-radius: 6px; background: #f0f9ff;">
+                <label style="font-weight: bold; display: block; margin-bottom: 8px; color: #0369a1;">USD
+                  (Долар):</label>
+                <div style="display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: #1e293b;">
+                  <label>Сума дог.: <span id="sum-usd">0,00</span></label>
+                  <label>Оплачено: <span id="paid-usd">0,00</span></label>
+                  <label>Відвантажено: <span id="shipped-usd">0,00</span></label>
+                </div>
               </div>
 
-              <div id="box-shipped">
-                <label>Відвантажено:</label>
-                <label>Грн (Відвантажено):
-                  <span id="shipped-uah">0.00</span></label>
-                <label>USD (Відвантажено):
-                  <span id="shipped-usd">0.00</span></label>
-                <label>EUR (Відвантажено):
-                  <span id="shipped-eur">0.00</span></label>
+              <!-- Блок EUR (Євро) - Жовтуватий/теплий відтінок -->
+              <div id="box-currency-eur"
+                style="flex: 1; border: 1px solid #cbd5e1; padding: 12px; border-radius: 6px; background: #fefce8;">
+                <label style="font-weight: bold; display: block; margin-bottom: 8px; color: #a16207;">EUR
+                  (Євро):</label>
+                <div style="display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: #1e293b;">
+                  <label>Сума дог.: <span id="sum-eur">0,00</span></label>
+                  <label>Оплачено: <span id="paid-eur">0,00</span></label>
+                  <label>Відвантажено: <span id="shipped-eur">0,00</span></label>
+                </div>
               </div>
             </div>
 

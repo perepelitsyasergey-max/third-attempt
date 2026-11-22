@@ -2368,14 +2368,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 }).join('');
 
                 // Генерація списку документів специфікації
+                // Генерація списку документів специфікації з українськими назвами типів
                 let docsHtml = '<p style="font-size: 12px; color: #64748b; margin: 4px 0;">Документи відсутні</p>';
                 if (spec.documents && spec.documents.length > 0) {
-                    docsHtml = spec.documents.map(doc => `
-                        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12px; background: #fff; padding: 4px 8px; margin-bottom: 3px; border: 1px solid #cbd5e1; border-radius: 4px;">
-                            <span><strong>[${doc.doc_type}]</strong> <a href="/api/documents/${doc.id}/download" target="_blank">${doc.file_name}</a></span>
-                            <button type="button" class="btn-delete-spec-doc" data-id="${doc.id}" style="color: red; border: none; background: none; cursor: pointer; font-size: 11px;">Видалити</button>
-                        </div>
-                    `).join('');
+                    const docTypeMap = {
+                        'dohovir': 'Договір',
+                        'vydatkova': 'Видаткова',
+                        'rakhunok': 'Рахунок',
+                        'akt_posluh': 'Акт',
+                        'inshe': 'Інше'
+                    };
+
+                    docsHtml = spec.documents.map(doc => {
+                        const ukrType = docTypeMap[doc.doc_type] || doc.doc_type;
+                        return `
+                            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12px; background: #fff; padding: 4px 8px; margin-bottom: 3px; border: 1px solid #cbd5e1; border-radius: 4px;">
+                                <span><strong>[${ukrType}]</strong> <a href="/api/documents/${doc.id}/download" target="_blank">${doc.file_name}</a></span>
+                                <button type="button" class="btn-delete-spec-doc" data-id="${doc.id}" style="color: red; border: none; background: none; cursor: pointer; font-size: 11px;">Видалити</button>
+                            </div>
+                        `;
+                    }).join('');
                 }
 
                 // 2. А тепер малюємо єдину цілісну картку без розривів тегів
@@ -2525,7 +2537,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     // ------------------------------------------------------------------------------------------------------
-    
+
     // 6.18.2. Допоміжна функція для визначення стилю дедлайну
     function getDeadlineStyle(deadlineStr, currentFactSum, totalCost) {
         if (!deadlineStr) return '';
