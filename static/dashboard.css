@@ -72,7 +72,8 @@ dialog {
 /* Таблиця товарів */
 #products-list-container table {
     width: 100%;
-    max-width: 100%; /* Розтягуємо на всю ширину як інші вкладки */
+    max-width: 100%;
+    /* Розтягуємо на всю ширину як інші вкладки */
     border-collapse: collapse;
     margin-top: 15px;
     table-layout: fixed;
@@ -107,19 +108,22 @@ dialog {
 /* Процентний розподіл колонок для товарів */
 #products-list-container th:nth-child(1),
 #products-list-container td:nth-child(1) {
-    width: 8%; /* ID */
+    width: 8%;
+    /* ID */
     text-align: center;
 }
 
 #products-list-container th:nth-child(2),
 #products-list-container td:nth-child(2) {
-    width: 60%; /* Назва товару (займає основний простір) */
+    width: 60%;
+    /* Назва товару (займає основний простір) */
     text-align: left;
 }
 
 #products-list-container th:nth-child(3),
 #products-list-container td:nth-child(3) {
-    width: 14%; /* Ціна */
+    width: 14%;
+    /* Ціна */
     text-align: right;
 }
 
@@ -127,7 +131,8 @@ dialog {
 #products-list-container td:nth-child(4),
 #products-list-container th:nth-child(5),
 #products-list-container td:nth-child(5) {
-    width: 9%; /* Редагувати / Видалити */
+    width: 9%;
+    /* Редагувати / Видалити */
     text-align: center;
 }
 
@@ -149,7 +154,8 @@ dialog {
     max-width: 100%;
     border-collapse: collapse;
     margin-top: 15px;
-    table-layout: fixed; /* Жорстко тримає ширину колонок */
+    table-layout: fixed;
+    /* Жорстко тримає ширину колонок */
     font-size: 13px;
     background-color: #fff;
 }
@@ -162,7 +168,8 @@ dialog {
     /* КРИТИЧНО ДЛЯ ДОВГИХ СЛІВ: переносимо слова і не даємо розривати макет */
     word-break: break-word;
     overflow-wrap: break-word;
-    vertical-align: top; /* Вирівнюємо вміст по верхньому краю, щоб довгі контакти виглядавли акуратно */
+    vertical-align: top;
+    /* Вирівнюємо вміст по верхньому краю, щоб довгі контакти виглядавли акуратно */
 }
 
 #counterparties-list-container th {
@@ -183,42 +190,49 @@ dialog {
 /* Фіксована ширина та вирівнювання для кожної з 8 колонок у відсотках (у сумі 100%) */
 #counterparties-list-container th:nth-child(1),
 #counterparties-list-container td:nth-child(1) {
-    width: 4%; /* ID */
+    width: 4%;
+    /* ID */
     text-align: center;
 }
 
 #counterparties-list-container th:nth-child(2),
 #counterparties-list-container td:nth-child(2) {
-    width: 15%; /* Назва */
+    width: 15%;
+    /* Назва */
 }
 
 #counterparties-list-container th:nth-child(3),
 #counterparties-list-container td:nth-child(3) {
-    width: 9%; /* ЄДРПОУ */
+    width: 9%;
+    /* ЄДРПОУ */
     text-align: center;
 }
 
 #counterparties-list-container th:nth-child(4),
 #counterparties-list-container td:nth-child(4) {
-    width: 9%; /* ІПН */
+    width: 9%;
+    /* ІПН */
     text-align: center;
 }
 
 #counterparties-list-container th:nth-child(5),
 #counterparties-list-container td:nth-child(5) {
-    width: 25%; /* Контакти */
+    width: 25%;
+    /* Контакти */
 }
 
 #counterparties-list-container th:nth-child(6),
 #counterparties-list-container td:nth-child(6) {
-    width: 23%; /* Адреса */
+    width: 23%;
+    /* Адреса */
 }
 
 #counterparties-list-container th:nth-child(7),
 #counterparties-list-container td:nth-child(7),
 #counterparties-list-container th:nth-child(8),
 #counterparties-list-container td:nth-child(8) {
-    width: 7.5%; /* Редагувати / Видалити */
+    width: 7.5%;
+    /* Редагувати / Видалити */
     text-align: center;
 }
 
@@ -268,31 +282,119 @@ dialog {
 }
 
 /* Розподіл усіх 17 колонок у відсотках (у сумі рівно 100%) */
-#contracts-list-container th:nth-child(1),  #contracts-list-container td:nth-child(1)  { width: 2%; text-align: center; } /* ID */
-#contracts-list-container th:nth-child(2),  #contracts-list-container td:nth-child(2)  { width: 5%; text-align: center; } /* Реєстр. № */
-#contracts-list-container th:nth-child(3),  #contracts-list-container td:nth-child(3)  { width: 5%; text-align: center; } /* Ном. угоди */
-#contracts-list-container th:nth-child(4),  #contracts-list-container td:nth-child(4)  { width: 7%; text-align: center; } /* Номер дог. */
-#contracts-list-container th:nth-child(5),  #contracts-list-container td:nth-child(5)  { width: 6%; text-align: center; } /* Тип дог. */
-#contracts-list-container th:nth-child(6),  #contracts-list-container td:nth-child(6)  { width: 9%; } /* Контрагент 1 */
-#contracts-list-container th:nth-child(7),  #contracts-list-container td:nth-child(7)  { width: 9%; } /* Контрагент 2 */
-#contracts-list-container th:nth-child(8),  #contracts-list-container td:nth-child(8)  { width: 6%; text-align: center; } /* Дата дог. */
-#contracts-list-container th:nth-child(9),  #contracts-list-container td:nth-child(9)  { width: 6%; text-align: center; } /* Дата закінчення */
-#contracts-list-container th:nth-child(10), #contracts-list-container td:nth-child(10) { width: 6%; text-align: center; } /* Статус */
-#contracts-list-container th:nth-child(11), #contracts-list-container td:nth-child(11) { width: 4%; text-align: center; } /* Валюта */
-#contracts-list-container th:nth-child(12), #contracts-list-container td:nth-child(12) { width: 7%; text-align: right; }  /* Сума договору */
-#contracts-list-container th:nth-child(13), #contracts-list-container td:nth-child(13) { width: 6%; text-align: right; }  /* Оплачено */
-#contracts-list-container th:nth-child(14), #contracts-list-container td:nth-child(14) { width: 6%; text-align: right; }  /* Відвантажено */
-#contracts-list-container th:nth-child(15), #contracts-list-container td:nth-child(15) { width: 5%; text-align: center; } /* Користувач */
+#contracts-list-container th:nth-child(1),
+#contracts-list-container td:nth-child(1) {
+    width: 2%;
+    text-align: center;
+}
+
+/* ID */
+#contracts-list-container th:nth-child(2),
+#contracts-list-container td:nth-child(2) {
+    width: 5%;
+    text-align: center;
+}
+
+/* Реєстр. № */
+#contracts-list-container th:nth-child(3),
+#contracts-list-container td:nth-child(3) {
+    width: 5%;
+    text-align: center;
+}
+
+/* Ном. угоди */
+#contracts-list-container th:nth-child(4),
+#contracts-list-container td:nth-child(4) {
+    width: 7%;
+    text-align: center;
+}
+
+/* Номер дог. */
+#contracts-list-container th:nth-child(5),
+#contracts-list-container td:nth-child(5) {
+    width: 6%;
+    text-align: center;
+}
+
+/* Тип дог. */
+#contracts-list-container th:nth-child(6),
+#contracts-list-container td:nth-child(6) {
+    width: 9%;
+}
+
+/* Контрагент 1 */
+#contracts-list-container th:nth-child(7),
+#contracts-list-container td:nth-child(7) {
+    width: 9%;
+}
+
+/* Контрагент 2 */
+#contracts-list-container th:nth-child(8),
+#contracts-list-container td:nth-child(8) {
+    width: 6%;
+    text-align: center;
+}
+
+/* Дата дог. */
+#contracts-list-container th:nth-child(9),
+#contracts-list-container td:nth-child(9) {
+    width: 6%;
+    text-align: center;
+}
+
+/* Дата закінчення */
+#contracts-list-container th:nth-child(10),
+#contracts-list-container td:nth-child(10) {
+    width: 6%;
+    text-align: center;
+}
+
+/* Статус */
+#contracts-list-container th:nth-child(11),
+#contracts-list-container td:nth-child(11) {
+    width: 4%;
+    text-align: center;
+}
+
+/* Валюта */
+#contracts-list-container th:nth-child(12),
+#contracts-list-container td:nth-child(12) {
+    width: 7%;
+    text-align: right;
+}
+
+/* Сума договору */
+#contracts-list-container th:nth-child(13),
+#contracts-list-container td:nth-child(13) {
+    width: 6%;
+    text-align: right;
+}
+
+/* Оплачено */
+#contracts-list-container th:nth-child(14),
+#contracts-list-container td:nth-child(14) {
+    width: 6%;
+    text-align: right;
+}
+
+/* Відвантажено */
+#contracts-list-container th:nth-child(15),
+#contracts-list-container td:nth-child(15) {
+    width: 5%;
+    text-align: center;
+}
+
+/* Користувач */
 
 /* Колонка 16: Редагувати (4.5%) */
-#contracts-list-container th:nth-child(16), 
+#contracts-list-container th:nth-child(16),
 #contracts-list-container td:nth-child(16) {
     width: 4.5%;
     text-align: center;
 }
 
 /* Колонка 17: Видалити (4.5%) */
-#contracts-list-container th:nth-child(17), 
+#contracts-list-container th:nth-child(17),
 #contracts-list-container td:nth-child(17) {
     width: 4.5%;
     text-align: center;
@@ -569,7 +671,7 @@ dialog {
     margin-bottom: 20px !important;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03) !important;
 
-    display: grid;        
+    display: grid;
     gap: 12px 14px;
     align-items: center;
     width: 100%;
@@ -581,6 +683,7 @@ dialog {
     grid-column: 1;
     grid-row: 1;
 }
+
 #filter-box-stage {
     grid-column: 1;
     grid-row: 2;
@@ -591,6 +694,7 @@ dialog {
     grid-column: 2;
     grid-row: 1;
 }
+
 #filter-box-currency {
     grid-column: 2;
     grid-row: 2;
@@ -604,10 +708,12 @@ dialog {
     align-items: center;
     gap: 8px;
 }
+
 #filter-box-contract-type {
     grid-column: 3;
     grid-row: 2;
 }
+
 #filter-box-contract-type select {
     width: 100% !important;
 }
@@ -617,13 +723,16 @@ dialog {
     grid-column: 4;
     grid-row: 1;
 }
+
 #filter-box-sort-date select {
     width: 100% !important;
 }
+
 #filter-box-sort-end-date {
     grid-column: 4;
     grid-row: 2;
 }
+
 #filter-box-sort-end-date select {
     width: 100% !important;
 }
@@ -638,6 +747,7 @@ dialog {
     font-size: 13px;
     color: #334155;
 }
+
 #filter-box-end-date-range {
     grid-column: 5;
     grid-row: 2;
@@ -647,6 +757,7 @@ dialog {
     font-size: 13px;
     color: #334155;
 }
+
 #filter-panel input[type="date"] {
     width: 115px !important;
 }
@@ -656,6 +767,7 @@ dialog {
     grid-column: 6;
     grid-row: 1;
 }
+
 #filter-box-reset button {
     width: 100% !important;
     white-space: nowrap;
@@ -667,6 +779,7 @@ dialog {
     grid-row: 1;
     justify-self: end;
 }
+
 #filter-box-export button {
     width: 100% !important;
     white-space: nowrap;
@@ -1038,7 +1151,8 @@ dialog {
 #btn-open-modal-contract,
 #btn-open-modal-counterparty,
 #btn-open-modal-product {
-    background-color: #28a745 !important; /* Зелений колір для дії створення */
+    background-color: #28a745 !important;
+    /* Зелений колір для дії створення */
     color: #ffffff !important;
     border: 1px solid #1e7e34 !important;
     border-radius: 6px !important;
@@ -1057,6 +1171,7 @@ dialog {
     background-color: #218838 !important;
     border-color: #1c7430 !important;
 }
+
 /* ----------------------------------------------------------------------------- */
 
 /* Універсальне закруглення та єдиний стиль для всіх полів введення дат у панелі фільтрів та модальних вікнах */
@@ -1076,3 +1191,63 @@ input[type="date"]:focus {
     border-color: #3b82f6 !important;
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15) !important;
 }
+
+/* ------------------------------------------------------------------------------------------------- */
+
+/* Ненав'язливий світло-синій стиль для кнопок редагування */
+button.btn-edit-product,
+button.btn-edit-counterparty,
+button.btn-edit-contract,
+button.btn-edit-spec {
+    background-color: #e0f2fe;
+    /* Світло-синій фон (Tailwind sky-100) */
+    color: #0369a1;
+    /* Темно-синій текст для контрасту */
+    border: 1px solid #bae6fd;
+    /* Акуратна рамка */
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background-color 0.2s;
+}
+
+/* Ефект при наведенні миші */
+button.btn-edit-product:hover,
+button.btn-edit-counterparty:hover,
+button.btn-edit-contract:hover,
+button.btn-edit-spec:hover {
+    background-color: #bae6fd;
+    /* Трохи насиченіший блакитний при наведенні */
+}
+
+/* Ненав'язливий світло-червоний стиль для кнопок видалення */
+button.btn-delete-product,
+button.btn-delete-counterparty,
+button.btn-delete-contract,
+button.btn-delete-spec,
+button.btn-delete-doc {
+    background-color: #fee2e2;
+    /* Дуже світлий, м'який червоний фон (Tailwind red-100) */
+    color: #991b1b;
+    /* Темно-червоний текст для гарного контракту */
+    border: 1px solid #fecaca;
+    /* Тонка світло-червона рамка */
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background-color 0.2s;
+}
+
+/* Ефект при наведенні миші */
+button.btn-delete-product:hover,
+button.btn-delete-counterparty:hover,
+button.btn-delete-contract:hover,
+button.btn-delete-spec:hover,
+button.btn-delete-doc:hover {
+    background-color: #fecaca;
+    /* Трохи насиченіший відтінок при наведенні */
+}
+
+/* ------------------------------------------------------------------------------------------------------- */

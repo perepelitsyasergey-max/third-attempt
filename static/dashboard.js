@@ -3036,102 +3036,143 @@ document.addEventListener('DOMContentLoaded', () => {
     // ---------------------------------------------------------------------------------------------
 
     // Функція завантаження та рендерингу дедлайнів на головній сторінці
-function loadDashboardDeadlines() {
-    const container = document.getElementById('dashboard-deadlines-container');
-    if (!container) return;
+    // Глобальний кеш для дедлайнів на головній сторінці
+    let deadlinesCacheList = [];
 
-    fetch('/api/dashboard/deadlines')
-        .then(response => response.json())
-        .then(data => {
-            if (data.error) {
-                container.innerHTML = `<p style="color: red;">Помилка: ${data.error}</p>`;
-                return;
-            }
+    function loadDashboardDeadlines() {
+        const container = document.getElementById('dashboard-deadlines-container');
+        if (!container) return;
 
-            if (data.length === 0) {
-                container.innerHTML = `<p style="color: #64748b; font-size: 13px;">Наразі немає активних дедлайнів чи контрольних дат.</p>`;
-                document.getElementById('stat-expired').innerText = '0';
-                document.getElementById('stat-upcoming').innerText = '0';
-                document.getElementById('stat-total').innerText = '0';
-                return;
-            }
-
-            let expiredCount = 0;
-            let upcomingCount = 0;
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-
-            let html = `
-                <table class="deadline-table">
-                    <thead>
-                        <tr>
-                            <th style="width: 15%;">Категорія</th>
-                            <th style="width: 15%;">Об'єкт / Договір</th>
-                            <th style="width: 25%;">Контрагент</th>
-                            <th style="width: 25%;">Деталі</th>
-                            <th style="width: 12%;">Дата</th>
-                            <th style="width: 8%;">Статус</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-            `;
-
-            data.forEach(item => {
-                const itemDate = new Date(item.date_obj);
-                itemDate.setHours(0, 0, 0, 0);
-                
-                const diffTime = itemDate - today;
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-                let badgeHtml = '';
-                if (diffDays < 0) {
-                    expiredCount++;
-                    badgeHtml = `<span class="badge-expired">Прострочено (${Math.abs(diffDays)} дн.)</span>`;
-                } else if (diffDays <= 7) {
-                    upcomingCount++;
-                    badgeHtml = `<span class="badge-warning">Спливає (${diffDays} дн.)</span>`;
-                } else {
-                    badgeHtml = `<span class="badge-normal">В нормі (+${diffDays} дн.)</span>`;
+        fetch('/api/dashboard/deadlines')
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    container.innerHTML = `<p style="color: red;">Помилка: ${data.error}</p>`;
+                    return;
                 }
 
-                html += `
-                    <tr>
-                        <td style="font-weight: 500; text-align: center;">${item.category_label}</td>
-                        <td style="text-align: center;"><a href="#" class="deadline-contract-link" data-contract-id="${item.contract_id}" style="color: #2563eb; text-decoration: none; font-weight: bold;" title="Відкрити договір">${item.reg_number}</a></td>
-                        <td>${item.counterparty}</td>
-                        <td>${item.details}</td>
-                        <td style="text-align: center; font-weight: bold;">${item.date}</td>
-                        <td style="text-align: center;">${badgeHtml}</td>
-                    </tr>
-                `;
+                deadlinesCacheList = data; // Зберігаємо у кеш для фільтрації
+                renderDashboardDeadlines(deadlinesCacheList); // Рендеримо таблицю та статистику
+            })
+            .catch(err => {
+                console.error('Помилка завантаження дедлайнів:', err);
+                container.innerHTML = `<p style="color: red;">Не вдалося завантажити дані дедлайнів.</p>`;
             });
-
-            html += `</tbody></table>`;
-            container.innerHTML = html;
-
-            // Оновлюємо міні-статистику зверху
-            document.getElementById('stat-expired').innerText = expiredCount;
-            document.getElementById('stat-upcoming').innerText = upcomingCount;
-            document.getElementById('stat-total').innerText = data.length;
-        })
-        .catch(err => {
-            console.error('Помилка завантаження дедлайнів:', err);
-            container.innerHTML = `<p style="color: red;">Не вдалося завантажити дані дедлайнів.</p>`;
-        });
-}
-// -----------------------------------------------------------------------------------------------------------------
-
-// Слухач кліків по номерах договорів у таблиці дедлайнів
-document.addEventListener('click', (e) => {
-    if (e.target.matches('.deadline-contract-link')) {
-        e.preventDefault();
-        const contractId = e.target.getAttribute('data-contract-id');
-        if (contractId) {
-            loadContractDetails(contractId);
-        }
     }
-});
-// --------------------------------------------------------------------------------------------------------------
+
+    // Функція рендерингу списку дедлайнів із урахуванням обраного фільтра
+    function renderDashboardDeadlines(items) {
+        const container = document.getElementById('dashboard-deadlines-container');
+        if (!container) return;
+
+        // Отримуємо значення обраного фільтра
+        const selectedCategory = document.getElementById('filter-deadline-category')?.value || '';
+        let filteredItems = items;
+
+        if (selectedCategory) {
+            filteredItems = items.filter(i => i.category_label === selectedCategory);
+        }
+
+        if (filteredItems.length === 0) {
+            container.innerHTML = `<p style="color: #64748b; font-size: 13px; padding: 10px 0;">За обраним фільтром подій не знайдено.</p>`;
+
+            // Оновлюємо міні-статистику до нуля, якщо нічого не знайдено за фільтром
+            document.getElementById('stat-expired').innerText = '0';
+            document.getElementById('stat-upcoming').innerText = '0';
+            document.getElementById('stat-total').innerText = '0';
+            return;
+        }
+
+        let expiredCount = 0;
+        let upcomingCount = 0;
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        let html = `
+        <table class="deadline-table">
+            <thead>
+                <tr>
+                    <th style="width: 12%;">Користувач</th>
+                    <th style="width: 15%;">Категорія</th>
+                    <th style="width: 15%;">Об'єкт / Договір</th>
+                    <th style="width: 25%;">Контрагент</th>
+                    <th style="width: 25%;">Деталі</th>
+                    <th style="width: 12%;">Дата</th>
+                    <th style="width: 8%;">Статус</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+
+        filteredItems.forEach(item => {
+            const itemDate = new Date(item.date_obj);
+            itemDate.setHours(0, 0, 0, 0);
+
+            const diffTime = itemDate - today;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            let badgeHtml = '';
+            if (diffDays < 0) {
+                expiredCount++;
+                badgeHtml = `<span class="badge-expired">Прострочено (${Math.abs(diffDays)} дн.)</span>`;
+            } else if (diffDays <= 7) {
+                upcomingCount++;
+                badgeHtml = `<span class="badge-warning">Спливає (${diffDays} дн.)</span>`;
+            } else {
+                badgeHtml = `<span class="badge-normal">В нормі (+${diffDays} дн.)</span>`;
+            }
+
+            html += `
+            <tr>
+                <td style="text-align: center;">${item.user || ''}</td>
+                <td style="font-weight: 500; text-align: center;">${item.category_label}</td>
+                <td style="text-align: center;"><a href="#" class="deadline-contract-link" data-contract-id="${item.contract_id}" style="color: #2563eb; text-decoration: none; font-weight: bold;" title="Відкрити договір">${item.reg_number}</a></td>
+                <td>${item.counterparty}</td>
+                <td>${item.details}</td>
+                <td style="text-align: center; font-weight: bold;">${item.date}</td>
+                <td style="text-align: center;">${badgeHtml}</td>
+            </tr>
+        `;
+        });
+
+        html += `</tbody></table>`;
+        container.innerHTML = html;
+
+        // Рахуємо статистику по ВСЬОМУ кешу (щоб міні-картки зверху завжди показували реальну загальну кількість прострочених/палаючих подій)
+        let totalExpiredAll = 0;
+        let totalUpcomingAll = 0;
+
+        deadlinesCacheList.forEach(item => {
+            const itemDate = new Date(item.date_obj);
+            itemDate.setHours(0, 0, 0, 0);
+            const diffDays = Math.ceil((itemDate - today) / (1000 * 60 * 60 * 24));
+            if (diffDays < 0) totalExpiredAll++;
+            else if (diffDays <= 7) totalUpcomingAll++;
+        });
+
+        document.getElementById('stat-expired').innerText = totalExpiredAll;
+        document.getElementById('stat-upcoming').innerText = totalUpcomingAll;
+        document.getElementById('stat-total').innerText = deadlinesCacheList.length;
+    }
+
+    // Слухач події зміни фільтра категорій дедлайнів
+    document.addEventListener('change', (e) => {
+        if (e.target && e.target.id === 'filter-deadline-category') {
+            renderDashboardDeadlines(deadlinesCacheList);
+        }
+    });// -----------------------------------------------------------------------------------------------------------------
+
+    // Слухач кліків по номерах договорів у таблиці дедлайнів
+    document.addEventListener('click', (e) => {
+        if (e.target.matches('.deadline-contract-link')) {
+            e.preventDefault();
+            const contractId = e.target.getAttribute('data-contract-id');
+            if (contractId) {
+                loadContractDetails(contractId);
+            }
+        }
+    });
+    // --------------------------------------------------------------------------------------------------------------
 
 
 

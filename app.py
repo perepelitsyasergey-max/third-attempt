@@ -1103,7 +1103,8 @@ def get_dashboard_deadlines():
                         'contract_id': contract.id,
                         'reg_number': reg_num,
                         'counterparty': contract.counterparty_1_db or contract.counterparty_2_db or 'Не вказано',
-                        'details': details_str
+                        'details': details_str,
+                        'user': contract.user_db or ''  # <--- Додано для договорів
                     })
                 except Exception as ex:
                     print(f"Помилка парсингу дати договору {contract.id}: {ex}")
@@ -1151,7 +1152,8 @@ def get_dashboard_deadlines():
                                 'contract_id': contract.id,
                                 'reg_number': reg_num,
                                 'counterparty': counterparty,
-                                'details': item_details
+                                'details': item_details,
+                                'user': contract.user_db or ''  # <--- Додано для оплат
                             })
                         except Exception as ex:
                             print(f"Помилка дедлайну оплати товару {item.id}: {ex}")
@@ -1175,7 +1177,8 @@ def get_dashboard_deadlines():
                                 'contract_id': contract.id,
                                 'reg_number': reg_num,
                                 'counterparty': counterparty,
-                                'details': item_details
+                                'details': item_details,
+                                'user': contract.user_db or ''  # <--- Додано для поставок
                             })
                         except Exception as ex:
                             print(f"Помилка дедлайну поставки товару {item.id}: {ex}")

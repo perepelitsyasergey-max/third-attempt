@@ -1,241 +1,216 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dashboard333</title>
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='dashboard.css') }}"
-    />
-    <!-- ДОДАЄМО БІБЛІОТЕКУ ДЛЯ ЕКСПОРТУ В EXCEL -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  </head>
 
-  <body>
-    <!--🔶 Блок 1 (верхня панель) -->
-    <div id="top-bar">
-      <!-- 📌Блок 1.1. (кнопки навігації по вкладках) -->
-      <div id="nav-tabs">
-        <button id="btn-tab-home">Головна</button>
-        <button id="btn-tab-contracts">Договори</button>
-        <button id="btn-tab-counterparties">Контрагенти</button>
-        <button id="btn-tab-products">Товари</button>
-      </div>
-      <!-- 📌 Блок 1.2. (Вихід користувача) -->
-      <div id="logout-block">
-        <span>Користувач, {{ user_name_with_session }}</span>
-        <a href="/logout">Вихід</a>
-      </div>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard333</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}" />
+  <!-- ДОДАЄМО БІБЛІОТЕКУ ДЛЯ ЕКСПОРТУ В EXCEL -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+
+<body>
+  <!--🔶 Блок 1 (верхня панель) -->
+  <div id="top-bar">
+    <!-- 📌Блок 1.1. (кнопки навігації по вкладках) -->
+    <div id="nav-tabs">
+      <button id="btn-tab-home">Головна</button>
+      <button id="btn-tab-contracts">Договори</button>
+      <button id="btn-tab-counterparties">Контрагенти</button>
+      <button id="btn-tab-products">Товари</button>
     </div>
-    <!--🔶 Блок 2 (вміст вкладок) -->
-    <div id="main-content-area">
-      <div id="tab-home" class="tab-content">
-        <div class="tab-header-flex">
-          <h2>Головна — Оперативний контроль та дедлайни</h2>
+    <!-- 📌 Блок 1.2. (Вихід користувача) -->
+    <div id="logout-block">
+      <span>Користувач, {{ user_name_with_session }}</span>
+      <a href="/logout">Вихід</a>
+    </div>
+  </div>
+  <!--🔶 Блок 2 (вміст вкладок) -->
+  <div id="main-content-area">
+    <div id="tab-home" class="tab-content">
+      <div class="tab-header-flex">
+        <h2>Головна — Оперативний контроль та дедлайни</h2>
+      </div>
+
+      <!-- Зведені міні-картки зверху (все в один рядок) -->
+      <div style="display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap">
+        <div style="
+              background: #f8fafc;
+              border: 1px solid #cbd5e1;
+              border-radius: 8px;
+              padding: 8px 16px;
+              display: flex;
+              align-items: center;
+              gap: 8px;
+            ">
+          <span style="font-size: 13px; color: #64748b">Прострочені події:</span>
+          <span id="stat-expired" style="font-size: 18px; font-weight: bold; color: #dc2626">0</span>
         </div>
 
-        <!-- Зведені міні-картки зверху -->
-        <div
-          style="display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap"
-        >
-          <div
-            style="
+        <div style="
               background: #f8fafc;
               border: 1px solid #cbd5e1;
               border-radius: 8px;
-              padding: 12px 20px;
-              min-width: 150px;
-            "
-          >
-            <span style="font-size: 13px; color: #64748b; display: block"
-              >Прострочені події:</span
-            >
-            <span
-              id="stat-expired"
-              style="font-size: 22px; font-weight: bold; color: #dc2626"
-              >0</span
-            >
-          </div>
-          <div
-            style="
-              background: #f8fafc;
-              border: 1px solid #cbd5e1;
-              border-radius: 8px;
-              padding: 12px 20px;
-              min-width: 150px;
-            "
-          >
-            <span style="font-size: 13px; color: #64748b; display: block"
-              >Горять (на 7 днів):</span
-            >
-            <span
-              id="stat-upcoming"
-              style="font-size: 22px; font-weight: bold; color: #d97706"
-              >0</span
-            >
-          </div>
-          <div
-            style="
-              background: #f8fafc;
-              border: 1px solid #cbd5e1;
-              border-radius: 8px;
-              padding: 12px 20px;
-              min-width: 150px;
-            "
-          >
-            <span style="font-size: 13px; color: #64748b; display: block"
-              >Всього контролюється:</span
-            >
-            <span
-              id="stat-total"
-              style="font-size: 22px; font-weight: bold; color: #2563eb"
-              >0</span
-            >
-          </div>
+              padding: 8px 16px;
+              display: flex;
+              align-items: center;
+              gap: 8px;
+            ">
+          <span style="font-size: 13px; color: #64748b">Горять (на 7 днів):</span>
+          <span id="stat-upcoming" style="font-size: 18px; font-weight: bold; color: #d97706">0</span>
         </div>
 
-        <!-- Контейнер для списку дедлайнів -->
-        <div
-          style="
+        <div style="
+              background: #f8fafc;
+              border: 1px solid #cbd5e1;
+              border-radius: 8px;
+              padding: 8px 16px;
+              display: flex;
+              align-items: center;
+              gap: 8px;
+            ">
+          <span style="font-size: 13px; color: #64748b">Всього контролюється:</span>
+          <span id="stat-total" style="font-size: 18px; font-weight: bold; color: #2563eb">0</span>
+        </div>
+      </div>
+
+      <!-- Контейнер для списку дедлайнів -->
+      <div style="
             background: #ffffff;
             border: 1px solid #cbd5e1;
             border-radius: 8px;
             padding: 20px;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
-          "
-        >
-          <h3
-            style="
-              margin-top: 0;
-              margin-bottom: 15px;
-              font-size: 16px;
-              color: #1e293b;
-            "
-          >
-            ⏰ Найближчі дедлайни та контрольні дати
-          </h3>
-          <div id="dashboard-deadlines-container">
-            <p style="color: #64748b; font-size: 13px">Завантаження даних...</p>
+          ">
+        <!-- Рядок: фільтр зліва, заголовок праворуч (або навпаки) -->
+        <div style="display: flex; justify-content: flex-start; align-items: center; gap: 20px; margin-bottom: 15px;">
+          <!-- Випадаючий список фільтра (ЗЛІВА) -->
+          <div>
+            <select id="filter-deadline-category"
+              style="padding: 6px 10px; font-size: 13px; border: 1px solid #cbd5e1; border-radius: 4px; background: #fff; cursor: pointer;">
+              <option value="">Усі категорії</option>
+              <option value="Термін оплати">Термін оплати</option>
+              <option value="Термін поставки">Термін поставки</option>
+              <option value="Закінчення договору">Закінчення договору</option>
+            </select>
           </div>
+
+        </div>
+
+        <div id="dashboard-deadlines-container">
+          <p style="color: #64748b; font-size: 13px">Завантаження даних...</p>
         </div>
       </div>
-      <div id="tab-contracts" class="tab-content">
-        <div class="tab-header-flex">
-          <h2>Договори</h2>
-          <button id="btn-open-modal-contract">Додати договір</button>
+    </div>
+    <div id="tab-contracts" class="tab-content">
+      <div class="tab-header-flex">
+        <h2>Договори</h2>
+        <button id="btn-open-modal-contract">Додати договір</button>
+      </div>
+      <!-- Панель фільтрів -->
+      <div id="filter-panel">
+        <!-- Колонка 1: Пошук та Статус -->
+        <div id="filter-box-search">
+          <input type="text" id="filter-contract-search" placeholder="Пошук по договорах..." />
         </div>
-        <!-- Панель фільтрів -->
-        <div id="filter-panel">
-          <!-- Колонка 1: Пошук та Статус -->
-          <div id="filter-box-search">
-            <input
-              type="text"
-              id="filter-contract-search"
-              placeholder="Пошук по договорах..."
-            />
-          </div>
-          <div id="filter-box-stage">
-            <select id="filter-contract-stage">
-              <option value="">За статусом</option>
-              <option value="concluding">Укладання</option>
-              <option value="active">Діючий</option>
-              <option value="without_support">Діючий (без супроводу)</option>
-              <option value="completed">Завершений</option>
-            </select>
-          </div>
-
-          <!-- Колонка 2: Користувачі та Валюти -->
-          <div id="filter-box-user">
-            <select id="filter-contract-user">
-              <option value=""></option>
-            </select>
-          </div>
-          <div id="filter-box-currency">
-            <select id="filter-contract-currency">
-              <option value="">Усі валюти</option>
-              <option value="UAH">UAH</option>
-              <option value="USD">USD</option>
-              <option value="EUR">EUR</option>
-            </select>
-          </div>
-
-          <!-- Фільтр за типом договору -->
-          <div id="filter-box-contract-type">
-            <select id="filter-contract-type">
-              <option value="">За типом дог.</option>
-              <option value="buyers">З покупцями</option>
-              <option value="suppliers">З постачальниками</option>
-              <option value="lease">Оренда</option>
-              <option value="financial_aid">Фін. допомога</option>
-              <option value="nda">NDA</option>
-              <option value="memorandum">Меморандум</option>
-            </select>
-          </div>
-
-          <!-- Колонка 3: Сортування -->
-          <div id="filter-box-sort-date">
-            <select id="sort-contracts-date">
-              <option value="">Сортування за датою дог.</option>
-              <option value="asc">Спочатку старіші</option>
-              <option value="desc">Спочатку новіші</option>
-            </select>
-          </div>
-          <div id="filter-box-sort-end-date">
-            <select id="sort-contracts-end-date">
-              <option value="">По даті завершення дог.</option>
-              <option value="asc">Спочатку найближчі</option>
-              <option value="desc">Спочатку найдальші</option>
-            </select>
-          </div>
-
-          <!-- Колонка 4: Періоди дат -->
-          <div id="filter-box-date-range">
-            <span>Дата дог. з:</span>
-            <input type="date" id="filter-contract-date-from" />
-            <span>по:</span>
-            <input type="date" id="filter-contract-date-to" />
-          </div>
-          <div id="filter-box-end-date-range">
-            <span>Дата зав. з:</span>
-            <input type="date" id="filter-end-date-from" />
-            <span>по:</span>
-            <input type="date" id="filter-end-date-to" />
-          </div>
-
-          <!-- Колонка 5: Архів та Скинути фільтри -->
-          <div id="filter-box-archive">
-            <label>
-              <input type="checkbox" id="filter-contract-archive" /> Архів
-            </label>
-            <span id="archived-count-badge"></span>
-          </div>
-          <div id="filter-box-reset">
-            <button type="button" id="btn-reset-filters">
-              Скинути фільтри
-            </button>
-          </div>
-
-          <!-- Колонка 6: Експорт -->
-          <div id="filter-box-export">
-            <button id="btn-export-excel">📊 Експорт</button>
-          </div>
+        <div id="filter-box-stage">
+          <select id="filter-contract-stage">
+            <option value="">За статусом</option>
+            <option value="concluding">Укладання</option>
+            <option value="active">Діючий</option>
+            <option value="without_support">Діючий (без супроводу)</option>
+            <option value="completed">Завершений</option>
+          </select>
         </div>
 
-        <!-- БЛОК ЗАГАЛЬНИХ ПІДСУМКІВ У РОЗРІЗІ ВАЛЮТ (КОМПАКТНА СІТКА) -->
-        <div
-          id="contracts-summary-dashboard"
-          style="
+        <!-- Колонка 2: Користувачі та Валюти -->
+        <div id="filter-box-user">
+          <select id="filter-contract-user">
+            <option value=""></option>
+          </select>
+        </div>
+        <div id="filter-box-currency">
+          <select id="filter-contract-currency">
+            <option value="">Усі валюти</option>
+            <option value="UAH">UAH</option>
+            <option value="USD">USD</option>
+            <option value="EUR">EUR</option>
+          </select>
+        </div>
+
+        <!-- Фільтр за типом договору -->
+        <div id="filter-box-contract-type">
+          <select id="filter-contract-type">
+            <option value="">За типом дог.</option>
+            <option value="buyers">З покупцями</option>
+            <option value="suppliers">З постачальниками</option>
+            <option value="lease">Оренда</option>
+            <option value="financial_aid">Фін. допомога</option>
+            <option value="nda">NDA</option>
+            <option value="memorandum">Меморандум</option>
+          </select>
+        </div>
+
+        <!-- Колонка 3: Сортування -->
+        <div id="filter-box-sort-date">
+          <select id="sort-contracts-date">
+            <option value="">Сортування за датою дог.</option>
+            <option value="asc">Спочатку старіші</option>
+            <option value="desc">Спочатку новіші</option>
+          </select>
+        </div>
+        <div id="filter-box-sort-end-date">
+          <select id="sort-contracts-end-date">
+            <option value="">По даті завершення дог.</option>
+            <option value="asc">Спочатку найближчі</option>
+            <option value="desc">Спочатку найдальші</option>
+          </select>
+        </div>
+
+        <!-- Колонка 4: Періоди дат -->
+        <div id="filter-box-date-range">
+          <span>Дата дог. з:</span>
+          <input type="date" id="filter-contract-date-from" />
+          <span>по:</span>
+          <input type="date" id="filter-contract-date-to" />
+        </div>
+        <div id="filter-box-end-date-range">
+          <span>Дата зав. з:</span>
+          <input type="date" id="filter-end-date-from" />
+          <span>по:</span>
+          <input type="date" id="filter-end-date-to" />
+        </div>
+
+        <!-- Колонка 5: Архів та Скинути фільтри -->
+        <div id="filter-box-archive">
+          <label>
+            <input type="checkbox" id="filter-contract-archive" /> Архів
+          </label>
+          <span id="archived-count-badge"></span>
+        </div>
+        <div id="filter-box-reset">
+          <button type="button" id="btn-reset-filters">
+            Скинути фільтри
+          </button>
+        </div>
+
+        <!-- Колонка 6: Експорт -->
+        <div id="filter-box-export">
+          <button id="btn-export-excel">📊 Експорт</button>
+        </div>
+      </div>
+
+      <!-- БЛОК ЗАГАЛЬНИХ ПІДСУМКІВ У РОЗРІЗІ ВАЛЮТ (КОМПАКТНА СІТКА) -->
+      <div id="contracts-summary-dashboard" style="
             display: flex;
             gap: 15px;
             margin: 12px 0;
             flex-wrap: wrap;
             align-items: stretch;
-          "
-        >
-          <!-- Загальна кількість договорів -->
-          <div
-            style="
+          ">
+        <!-- Загальна кількість договорів -->
+        <div style="
               background: #f8fafc;
               border: 1px solid #333;
               border-radius: 8px;
@@ -245,17 +220,13 @@
               justify-content: center;
               align-items: center;
               min-width: 90px;
-            "
-          >
-            <span style="font-size: 12px; color: #555">Договорів:</span>
-            <span id="summary-count" style="font-size: 18px; font-weight: bold"
-              >0</span
-            >
-          </div>
+            ">
+          <span style="font-size: 12px; color: #555">Договорів:</span>
+          <span id="summary-count" style="font-size: 18px; font-weight: bold">0</span>
+        </div>
 
-          <!-- Блок UAH -->
-          <div
-            style="
+        <!-- Блок UAH -->
+        <div style="
               background: #f0fdf4;
               border: 1px solid #333;
               border-radius: 8px;
@@ -265,38 +236,36 @@
               column-gap: 18px;
               row-gap: 4px;
               font-size: 13px;
-            "
-          >
-            <div style="font-weight: bold; color: #0275d8; padding-right: 6px">
-              UAH
-            </div>
-            <div>Сума: <strong id="uah-total">0,00</strong></div>
-            <div></div>
+            ">
+          <div style="font-weight: bold; color: #0275d8; padding-right: 6px">
+            UAH
+          </div>
+          <div>Сума: <strong id="uah-total">0,00</strong></div>
+          <div></div>
 
-            <div></div>
-            <div>
-              Оплачено:
-              <strong id="uah-paid" style="color: #5cb85c">0,00</strong>
-            </div>
-            <div>
-              Відвантажено:
-              <strong id="uah-shipped" style="color: #5bc0de">0,00</strong>
-            </div>
-
-            <div></div>
-            <div>
-              Неоплачено:
-              <strong id="uah-unpaid" style="color: #d9534f">0,00</strong>
-            </div>
-            <div>
-              Невідвантажено:
-              <strong id="uah-unshipped" style="color: #f0ad4e">0,00</strong>
-            </div>
+          <div></div>
+          <div>
+            Оплачено:
+            <strong id="uah-paid" style="color: #5cb85c">0,00</strong>
+          </div>
+          <div>
+            Відвантажено:
+            <strong id="uah-shipped" style="color: #5bc0de">0,00</strong>
           </div>
 
-          <!-- Блок USD -->
-          <div
-            style="
+          <div></div>
+          <div>
+            Неоплачено:
+            <strong id="uah-unpaid" style="color: #d9534f">0,00</strong>
+          </div>
+          <div>
+            Невідвантажено:
+            <strong id="uah-unshipped" style="color: #f0ad4e">0,00</strong>
+          </div>
+        </div>
+
+        <!-- Блок USD -->
+        <div style="
               background: #f0f9ff;
               border: 1px solid #333;
               border-radius: 8px;
@@ -306,38 +275,36 @@
               column-gap: 18px;
               row-gap: 4px;
               font-size: 13px;
-            "
-          >
-            <div style="font-weight: bold; color: #0275d8; padding-right: 6px">
-              USD
-            </div>
-            <div>Сума: <strong id="usd-total">0,00</strong></div>
-            <div></div>
+            ">
+          <div style="font-weight: bold; color: #0275d8; padding-right: 6px">
+            USD
+          </div>
+          <div>Сума: <strong id="usd-total">0,00</strong></div>
+          <div></div>
 
-            <div></div>
-            <div>
-              Оплачено:
-              <strong id="usd-paid" style="color: #5cb85c">0,00</strong>
-            </div>
-            <div>
-              Відвантажено:
-              <strong id="usd-shipped" style="color: #5bc0de">0,00</strong>
-            </div>
-
-            <div></div>
-            <div>
-              Неоплачено:
-              <strong id="usd-unpaid" style="color: #d9534f">0,00</strong>
-            </div>
-            <div>
-              Невідвантажено:
-              <strong id="usd-unshipped" style="color: #f0ad4e">0,00</strong>
-            </div>
+          <div></div>
+          <div>
+            Оплачено:
+            <strong id="usd-paid" style="color: #5cb85c">0,00</strong>
+          </div>
+          <div>
+            Відвантажено:
+            <strong id="usd-shipped" style="color: #5bc0de">0,00</strong>
           </div>
 
-          <!-- Блок EUR -->
-          <div
-            style="
+          <div></div>
+          <div>
+            Неоплачено:
+            <strong id="usd-unpaid" style="color: #d9534f">0,00</strong>
+          </div>
+          <div>
+            Невідвантажено:
+            <strong id="usd-unshipped" style="color: #f0ad4e">0,00</strong>
+          </div>
+        </div>
+
+        <!-- Блок EUR -->
+        <div style="
               background: #fefce8;
               border: 1px solid #333;
               border-radius: 8px;
@@ -347,201 +314,158 @@
               column-gap: 18px;
               row-gap: 4px;
               font-size: 13px;
-            "
-          >
-            <div style="font-weight: bold; color: #0275d8; padding-right: 6px">
-              EUR
-            </div>
-            <div>Сума: <strong id="eur-total">0,00</strong></div>
-            <div></div>
+            ">
+          <div style="font-weight: bold; color: #0275d8; padding-right: 6px">
+            EUR
+          </div>
+          <div>Сума: <strong id="eur-total">0,00</strong></div>
+          <div></div>
 
-            <div></div>
-            <div>
-              Оплачено:
-              <strong id="eur-paid" style="color: #5cb85c">0,00</strong>
-            </div>
-            <div>
-              Відвантажено:
-              <strong id="eur-shipped" style="color: #5bc0de">0,00</strong>
-            </div>
+          <div></div>
+          <div>
+            Оплачено:
+            <strong id="eur-paid" style="color: #5cb85c">0,00</strong>
+          </div>
+          <div>
+            Відвантажено:
+            <strong id="eur-shipped" style="color: #5bc0de">0,00</strong>
+          </div>
 
-            <div></div>
-            <div>
-              Неоплачено:
-              <strong id="eur-unpaid" style="color: #d9534f">0,00</strong>
-            </div>
-            <div>
-              Невідвантажено:
-              <strong id="eur-unshipped" style="color: #f0ad4e">0,00</strong>
-            </div>
+          <div></div>
+          <div>
+            Неоплачено:
+            <strong id="eur-unpaid" style="color: #d9534f">0,00</strong>
+          </div>
+          <div>
+            Невідвантажено:
+            <strong id="eur-unshipped" style="color: #f0ad4e">0,00</strong>
           </div>
         </div>
+      </div>
 
-        <div id="contracts-list-container"></div>
-      </div>
-      <div id="tab-counterparties" class="tab-content">
-        <div class="tab-header-flex">
-          <h2>Контрагенти</h2>
-          <button id="btn-open-modal-counterparty">Додати контрагента</button>
-        </div>
-        <div id="counterparties-list-container"></div>
-      </div>
-      <div id="tab-products" class="tab-content">
-        <div class="tab-header-flex">
-          <h2>Товари</h2>
-          <button id="btn-open-modal-product">Додати товар</button>
-        </div>
-        <div id="products-list-container"></div>
-      </div>
+      <div id="contracts-list-container"></div>
     </div>
-    <!-- *
+    <div id="tab-counterparties" class="tab-content">
+      <div class="tab-header-flex">
+        <h2>Контрагенти</h2>
+        <button id="btn-open-modal-counterparty">Додати контрагента</button>
+      </div>
+      <div id="counterparties-list-container"></div>
+    </div>
+    <div id="tab-products" class="tab-content">
+      <div class="tab-header-flex">
+        <h2>Товари</h2>
+        <button id="btn-open-modal-product">Додати товар</button>
+      </div>
+      <div id="products-list-container"></div>
+    </div>
+  </div>
+  <!-- *
     * -->
-    <!-- ===============================================================================
+  <!-- ===============================================================================
     Форми для заповнення 
     ==================================================================================== -->
-    <!--🔶 Блок 3. Контейнер заповнення інформації про товари -->
-    <dialog id="modal-add-product">
-      <div class="modal-header">
-        <h2 id="modal-product-title">Додати/редагувати товар</h2>
-        <button type="button" id="btn-close-modal-product" class="btn-close">
-          ×
-        </button>
+  <!--🔶 Блок 3. Контейнер заповнення інформації про товари -->
+  <dialog id="modal-add-product">
+    <div class="modal-header">
+      <h2 id="modal-product-title">Додати/редагувати товар</h2>
+      <button type="button" id="btn-close-modal-product" class="btn-close">
+        ×
+      </button>
+    </div>
+    <form id="form-add-product">
+      <div class="modal-content">
+        <input type="hidden" name="product-id" id="product-id" />
+
+        <label for="product-name"> Назва товару</label>
+        <input type="text" name="product-name" id="product-name" class="input-field" />
+        <br />
+        <label for="product-price"> Ціна товару</label>
+        <input type="text" name="product-price" id="product-price" class="input-field" />
+        <br />
+        <br />
+        <button type="button" id="btn-save-product">Зберегти товар</button>
       </div>
-      <form id="form-add-product">
-        <div class="modal-content">
-          <input type="hidden" name="product-id" id="product-id" />
+    </form>
+  </dialog>
 
-          <label for="product-name"> Назва товару</label>
-          <input
-            type="text"
-            name="product-name"
-            id="product-name"
-            class="input-field"
-          />
-          <br />
-          <label for="product-price"> Ціна товару</label>
-          <input
-            type="text"
-            name="product-price"
-            id="product-price"
-            class="input-field"
-          />
-          <br />
-          <br />
-          <button type="button" id="btn-save-product">Зберегти товар</button>
-        </div>
-      </form>
-    </dialog>
+  <!--🔶 Блок 4. Контейнер заповнення інформації про контрагентів -->
+  <dialog id="modal-add-counterparty">
+    <div class="modal-header">
+      <h2 id="modal-counterparty-title">Контрагент</h2>
+      <button type="button" id="btn-close-modal-counterparty" class="btn-close">
+        ×
+      </button>
+    </div>
+    <form id="form-add-counterparty">
+      <div class="modal-content">
+        <input type="hidden" name="counterparty-id" id="counterparty-id" />
 
-    <!--🔶 Блок 4. Контейнер заповнення інформації про контрагентів -->
-    <dialog id="modal-add-counterparty">
-      <div class="modal-header">
-        <h2 id="modal-counterparty-title">Контрагент</h2>
-        <button
-          type="button"
-          id="btn-close-modal-counterparty"
-          class="btn-close"
-        >
-          ×
-        </button>
+        <label for="counterparty-name">Назва контрагента</label>
+        <input type="text" name="counterparty-name" id="counterparty-name" class="input-field" />
+        <br />
+        <label for="counterparty-edrpou">ЄДРПОУ (РНОКПП)</label>
+        <input type="text" name="counterparty-edrpou" id="counterparty-edrpou" class="input-field" />
+        <br />
+        <label for="counterparty-ipn">ІПН</label>
+        <input type="text" name="counterparty-ipn" id="counterparty-ipn" class="input-field" />
+        <br />
+        <label for="counterparty-contacts">Контакти</label>
+        <textarea name="counterparty-contacts" id="counterparty-contacts"></textarea>
+        <br />
+        <label for="counterparty-adress">Адреса</label>
+        <textarea name="counterparty-adress" id="counterparty-adress"></textarea>
+        <br />
+        <br />
+        <button id="btn-save-counterparty">Зберегти контрагента</button>
       </div>
-      <form id="form-add-counterparty">
-        <div class="modal-content">
-          <input type="hidden" name="counterparty-id" id="counterparty-id" />
+    </form>
+  </dialog>
 
-          <label for="counterparty-name">Назва контрагента</label>
-          <input
-            type="text"
-            name="counterparty-name"
-            id="counterparty-name"
-            class="input-field"
-          />
-          <br />
-          <label for="counterparty-edrpou">ЄДРПОУ (РНОКПП)</label>
-          <input
-            type="text"
-            name="counterparty-edrpou"
-            id="counterparty-edrpou"
-            class="input-field"
-          />
-          <br />
-          <label for="counterparty-ipn">ІПН</label>
-          <input
-            type="text"
-            name="counterparty-ipn"
-            id="counterparty-ipn"
-            class="input-field"
-          />
-          <br />
-          <label for="counterparty-contacts">Контакти</label>
-          <textarea
-            name="counterparty-contacts"
-            id="counterparty-contacts"
-          ></textarea>
-          <br />
-          <label for="counterparty-adress">Адреса</label>
-          <textarea
-            name="counterparty-adress"
-            id="counterparty-adress"
-          ></textarea>
-          <br />
-          <br />
-          <button id="btn-save-counterparty">Зберегти контрагента</button>
-        </div>
-      </form>
-    </dialog>
+  <!--🔶 Блок 5. Контейнер заповнення інформації про Договір -->
+  <dialog id="modal-add-contract">
+    <div class="modal-header">
+      <h2 id="modal-contract-title">Договір</h2>
+      <button type="button" id="btn-close-modal-contract" class="btn-close">
+        ×
+      </button>
+    </div>
+    <form id="form-add-contract">
+      <div class="modal-content">
+        <input type="hidden" name="contract-id" id="contract-id" />
 
-    <!--🔶 Блок 5. Контейнер заповнення інформації про Договір -->
-    <dialog id="modal-add-contract">
-      <div class="modal-header">
-        <h2 id="modal-contract-title">Договір</h2>
-        <button type="button" id="btn-close-modal-contract" class="btn-close">
-          ×
-        </button>
-      </div>
-      <form id="form-add-contract">
-        <div class="modal-content">
-          <input type="hidden" name="contract-id" id="contract-id" />
+        <!-- Спільний контейнер-двоколонник -->
+        <div class="modal-layout">
+          <!-- ЛІВА КОЛОНКА: Документи договору -->
+          <div class="contract-documents-info">
+            <h3>Документи</h3>
 
-          <!-- Спільний контейнер-двоколонник -->
-          <div class="modal-layout">
-            <!-- ЛІВА КОЛОНКА: Документи договору -->
-            <div class="contract-documents-info">
-              <h3>Документи</h3>
+            <div class="doc-upload-controls">
+              <label for="doc-type-select">Тип документа:</label>
+              <select id="doc-type-select" class="input-field">
+                <option value="dohovir">Договір</option>
+                <option value="dodatkova_uhoda">Додаткова угода</option>
+                <option value="akt_pryimannya_peredachi">
+                  Акт приймання-передачі
+                </option>
+                <option value="akt_posluh">Акт послуг</option>
+                <option value="akt_davalnynskoyi">
+                  Акт давальницької сировини
+                </option>
+                <option value="vydatkova">Видаткова накладна</option>
+                <option value="rakhunok">Рахунок</option>
+                <option value="tekhnichne_zavdannya">
+                  Технічне завдання
+                </option>
+                <option value="memorandum">Меморандум</option>
+                <option value="nda">NDA</option>
+                <option value="inshe">Інше</option>
+              </select>
 
-              <div class="doc-upload-controls">
-                <label for="doc-type-select">Тип документа:</label>
-                <select id="doc-type-select" class="input-field">
-                  <option value="dohovir">Договір</option>
-                  <option value="dodatkova_uhoda">Додаткова угода</option>
-                  <option value="akt_pryimannya_peredachi">
-                    Акт приймання-передачі
-                  </option>
-                  <option value="akt_posluh">Акт послуг</option>
-                  <option value="akt_davalnynskoyi">
-                    Акт давальницької сировини
-                  </option>
-                  <option value="vydatkova">Видаткова накладна</option>
-                  <option value="rakhunok">Рахунок</option>
-                  <option value="tekhnichne_zavdannya">
-                    Технічне завдання
-                  </option>
-                  <option value="memorandum">Меморандум</option>
-                  <option value="nda">NDA</option>
-                  <option value="inshe">Інше</option>
-                </select>
+              <input type="file" id="doc-file-input" accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.jpg,.png"
+                style="margin-top: 8px; font-size: 12px; width: 100%" />
 
-                <input
-                  type="file"
-                  id="doc-file-input"
-                  accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.jpg,.png"
-                  style="margin-top: 8px; font-size: 12px; width: 100%"
-                />
-
-                <button
-                  type="button"
-                  id="btn-upload-document"
-                  style="
+              <button type="button" id="btn-upload-document" style="
                     margin-top: 8px;
                     width: 100%;
                     padding: 6px 10px;
@@ -551,98 +475,64 @@
                     border-radius: 4px;
                     cursor: pointer;
                     font-weight: bold;
-                  "
-                >
-                  ⬆️ Завантажити документ
-                </button>
-              </div>
-
-              <hr
-                style="margin: 12px 0; border: 0; border-top: 1px solid #ddd"
-              />
-
-              <div id="contract-documents-list">
-                <p style="font-size: 13px; color: #666">Документи відсутні.</p>
-              </div>
+                  ">
+                ⬆️ Завантажити документ
+              </button>
             </div>
-            <!-- кінець .contract-documents-info -->
 
-            <!-- Центральна колонка: Основна інформація договору -->
-            <div class="contract-main-info">
-              <!-- Реєстраційний номер -->
-              <div id="box-reg-number-contract">
-                <label for="reg-number-contract">Реєстр. № дог.</label>
-                <input
-                  type="text"
-                  name="reg-number-contract"
-                  id="reg-number-contract"
-                  class="input-field"
-                />
-              </div>
+            <hr style="margin: 12px 0; border: 0; border-top: 1px solid #ddd" />
 
-              <!-- Номер угоди -->
-              <div id="box-agreement-number">
-                <label for="agreement-number">Ном. угоди</label>
-                <input
-                  type="text"
-                  name="agreement-number"
-                  id="agreement-number"
-                  class="input-field"
-                />
-              </div>
+            <div id="contract-documents-list">
+              <p style="font-size: 13px; color: #666">Документи відсутні.</p>
+            </div>
+          </div>
+          <!-- кінець .contract-documents-info -->
 
-              <!-- Номер договору -->
-              <div id="box-contract-number">
-                <label for="contract-number">Номер дог.</label>
-                <input
-                  type="text"
-                  name="contract-number"
-                  id="contract-number"
-                  class="input-field"
-                />
-              </div>
+          <!-- Центральна колонка: Основна інформація договору -->
+          <div class="contract-main-info">
+            <!-- Реєстраційний номер -->
+            <div id="box-reg-number-contract">
+              <label for="reg-number-contract">Реєстр. № дог.</label>
+              <input type="text" name="reg-number-contract" id="reg-number-contract" class="input-field" />
+            </div>
 
-              <!-- Контрагент 1 -->
-              <div id="box-counterparty-1">
-                <label for="counterparty-1">Контрагент 1</label>
-                <input
-                  type="text"
-                  name="counterparty-1"
-                  id="counterparty-1"
-                  list="counterparties-list"
-                  placeholder="Почніть введення..."
-                />
-              </div>
+            <!-- Номер угоди -->
+            <div id="box-agreement-number">
+              <label for="agreement-number">Ном. угоди</label>
+              <input type="text" name="agreement-number" id="agreement-number" class="input-field" />
+            </div>
 
-              <!-- Контрагент 2 -->
-              <div id="box-counterparty-2">
-                <label for="counterparty-2">Контрагент 2</label>
-                <input
-                  type="text"
-                  name="counterparty-2"
-                  id="counterparty-2"
-                  list="counterparties-list"
-                  placeholder="Почніть введення..."
-                />
-                <datalist id="counterparties-list">
-                  <!-- Сюди JavaScript завантажить варіанти -->
-                </datalist>
-              </div>
+            <!-- Номер договору -->
+            <div id="box-contract-number">
+              <label for="contract-number">Номер дог.</label>
+              <input type="text" name="contract-number" id="contract-number" class="input-field" />
+            </div>
 
-              <!-- Кнопка швидкого додавання контрагента -->
-              <div
-                id="box-add-counterparty-btn"
-                style="
+            <!-- Контрагент 1 -->
+            <div id="box-counterparty-1">
+              <label for="counterparty-1">Контрагент 1</label>
+              <input type="text" name="counterparty-1" id="counterparty-1" list="counterparties-list"
+                placeholder="Почніть введення..." />
+            </div>
+
+            <!-- Контрагент 2 -->
+            <div id="box-counterparty-2">
+              <label for="counterparty-2">Контрагент 2</label>
+              <input type="text" name="counterparty-2" id="counterparty-2" list="counterparties-list"
+                placeholder="Почніть введення..." />
+              <datalist id="counterparties-list">
+                <!-- Сюди JavaScript завантажить варіанти -->
+              </datalist>
+            </div>
+
+            <!-- Кнопка швидкого додавання контрагента -->
+            <div id="box-add-counterparty-btn" style="
                   grid-column: 5;
                   grid-row: 1;
                   display: flex;
                   align-items: flex-end;
-                "
-              >
-                <button
-                  type="button"
-                  id="btn-quick-add-counterparty"
-                  style="
+                ">
+              <button type="button" id="btn-quick-add-counterparty" style="
                     padding: 6px 10px;
                     cursor: pointer;
                     background-color: #17a2b8;
@@ -651,413 +541,323 @@
                     border-radius: 4px;
                     font-size: 12px;
                     width: 100%;
-                  "
-                >
-                  + Додати контрагента
-                </button>
-              </div>
+                  ">
+                + Додати контрагента
+              </button>
+            </div>
 
-              <!-- Дата договору -->
-              <div id="box-contract-date">
-                <label for="contract-date">Дата дог.</label>
-                <input
-                  type="date"
-                  name="contract-date"
-                  id="contract-date"
-                  class="input-field"
-                />
-              </div>
+            <!-- Дата договору -->
+            <div id="box-contract-date">
+              <label for="contract-date">Дата дог.</label>
+              <input type="date" name="contract-date" id="contract-date" class="input-field" />
+            </div>
 
-              <!-- Дата закінчення договору -->
-              <div id="box-end-date">
-                <label for="end-date">Дата закінчення</label>
-                <input
-                  type="date"
-                  name="end-date"
-                  id="end-date"
-                  class="input-field"
-                />
-              </div>
+            <!-- Дата закінчення договору -->
+            <div id="box-end-date">
+              <label for="end-date">Дата закінчення</label>
+              <input type="date" name="end-date" id="end-date" class="input-field" />
+            </div>
 
-              <!-- Автопролонгація договору -->
-              <div id="box-auto-prolongation" class="checkbox-container">
-                <label for="auto-prolongation">Автопролонг.</label>
-                <input
-                  type="checkbox"
-                  name="auto-prolongation"
-                  id="auto-prolongation"
-                />
-              </div>
+            <!-- Автопролонгація договору -->
+            <div id="box-auto-prolongation" class="checkbox-container">
+              <label for="auto-prolongation">Автопролонг.</label>
+              <input type="checkbox" name="auto-prolongation" id="auto-prolongation" />
+            </div>
 
-              <!-- Архівні договорів -->
-              <div id="box-archival-contracts" class="checkbox-container">
-                <label for="archival-contracts">Архів</label>
-                <input
-                  type="checkbox"
-                  name="archival-contracts"
-                  id="archival-contracts"
-                />
-              </div>
+            <!-- Архівні договорів -->
+            <div id="box-archival-contracts" class="checkbox-container">
+              <label for="archival-contracts">Архів</label>
+              <input type="checkbox" name="archival-contracts" id="archival-contracts" />
+            </div>
 
-              <!-- Користувач -->
-              <div id="box-user">
-                <label for="contract-user">Користувач:</label>
-                <input
-                  type="text"
-                  name="contract-user"
-                  id="contract-user"
-                  class="input-field"
-                  value="{{ user_name_with_session }}"
-                  readonly
-                />
-              </div>
+            <!-- Користувач -->
+            <div id="box-user">
+              <label for="contract-user">Користувач:</label>
+              <input type="text" name="contract-user" id="contract-user" class="input-field"
+                value="{{ user_name_with_session }}" readonly />
+            </div>
 
-              <!-- Тип договору -->
-              <div id="box-contract-type">
-                <label>Тип дог.</label>
-                <select name="contract-type" id="contract-type">
-                  <option value=""></option>
-                  <option value="buyers">З покупцями</option>
-                  <option value="suppliers">З постачальниками</option>
-                  <option value="lease">Оренда</option>
-                  <option value="financial_aid">Фін. допомога</option>
-                  <option value="nda">NDA</option>
-                  <option value="memorandum">Меморандум</option>
-                </select>
-              </div>
+            <!-- Тип договору -->
+            <div id="box-contract-type">
+              <label>Тип дог.</label>
+              <select name="contract-type" id="contract-type">
+                <option value=""></option>
+                <option value="buyers">З покупцями</option>
+                <option value="suppliers">З постачальниками</option>
+                <option value="lease">Оренда</option>
+                <option value="financial_aid">Фін. допомога</option>
+                <option value="nda">NDA</option>
+                <option value="memorandum">Меморандум</option>
+              </select>
+            </div>
 
-              <!-- Статус договору -->
-              <div id="box-contract-stage">
-                <label>Статус</label>
-                <select name="contract-stage" id="contract-stage">
-                  <option value=""></option>
-                  <option value="concluding">Укладання</option>
-                  <option value="active">Діючий</option>
-                  <option value="without_support">
-                    Діючий (без супроводу)
-                  </option>
-                  <option value="completed">Завершений</option>
-                </select>
-              </div>
+            <!-- Статус договору -->
+            <div id="box-contract-stage">
+              <label>Статус</label>
+              <select name="contract-stage" id="contract-stage">
+                <option value=""></option>
+                <option value="concluding">Укладання</option>
+                <option value="active">Діючий</option>
+                <option value="without_support">
+                  Діючий (без супроводу)
+                </option>
+                <option value="completed">Завершений</option>
+              </select>
+            </div>
 
-              <!-- Тип коштів -->
-              <div id="box-funds-type">
-                <label>Тип коштів</label>
-                <select name="funds-type" id="funds-type">
-                  <option value=""></option>
-                  <option value="state">Державні</option>
-                  <option value="non_state">Недержавні</option>
-                </select>
-              </div>
+            <!-- Тип коштів -->
+            <div id="box-funds-type">
+              <label>Тип коштів</label>
+              <select name="funds-type" id="funds-type">
+                <option value=""></option>
+                <option value="state">Державні</option>
+                <option value="non_state">Недержавні</option>
+              </select>
+            </div>
 
-              <!-- Блок фінансові результати -->
-              <div
-                id="box-financial-results"
-                style="display: flex; gap: 15px; margin-bottom: 20px"
-              >
-                <!-- Блок UAH (Гривня) - Зеленуватий відтінок -->
-                <div
-                  id="box-currency-uah"
-                  style="
+            <!-- Блок фінансові результати -->
+            <div id="box-financial-results" style="display: flex; gap: 15px; margin-bottom: 20px">
+              <!-- Блок UAH (Гривня) - Зеленуватий відтінок -->
+              <div id="box-currency-uah" style="
                     flex: 1;
                     border: 1px solid #cbd5e1;
                     padding: 12px;
                     border-radius: 6px;
                     background: #f0fdf4;
-                  "
-                >
-                  <label
-                    style="
+                  ">
+                <label style="
                       font-weight: bold;
                       display: block;
                       margin-bottom: 8px;
                       color: #166534;
-                    "
-                    >UAH (Гривня):</label
-                  >
-                  <div
-                    style="
+                    ">UAH (Гривня):</label>
+                <div style="
                       display: flex;
                       flex-direction: column;
                       gap: 4px;
                       font-size: 13px;
                       color: #1e293b;
-                    "
-                  >
-                    <label>Сума дог.: <span id="sum-uah">0,00</span></label>
-                    <label>Оплачено: <span id="paid-uah">0,00</span></label>
-                    <label
-                      >Відвантажено: <span id="shipped-uah">0,00</span></label
-                    >
-                  </div>
+                    ">
+                  <label>Сума дог.: <span id="sum-uah">0,00</span></label>
+                  <label>Оплачено: <span id="paid-uah">0,00</span></label>
+                  <label>Відвантажено: <span id="shipped-uah">0,00</span></label>
                 </div>
+              </div>
 
-                <!-- Блок USD (Долар) - Блакитнуватий відтінок -->
-                <div
-                  id="box-currency-usd"
-                  style="
+              <!-- Блок USD (Долар) - Блакитнуватий відтінок -->
+              <div id="box-currency-usd" style="
                     flex: 1;
                     border: 1px solid #cbd5e1;
                     padding: 12px;
                     border-radius: 6px;
                     background: #f0f9ff;
-                  "
-                >
-                  <label
-                    style="
+                  ">
+                <label style="
                       font-weight: bold;
                       display: block;
                       margin-bottom: 8px;
                       color: #0369a1;
-                    "
-                    >USD (Долар):</label
-                  >
-                  <div
-                    style="
+                    ">USD (Долар):</label>
+                <div style="
                       display: flex;
                       flex-direction: column;
                       gap: 4px;
                       font-size: 13px;
                       color: #1e293b;
-                    "
-                  >
-                    <label>Сума дог.: <span id="sum-usd">0,00</span></label>
-                    <label>Оплачено: <span id="paid-usd">0,00</span></label>
-                    <label
-                      >Відвантажено: <span id="shipped-usd">0,00</span></label
-                    >
-                  </div>
+                    ">
+                  <label>Сума дог.: <span id="sum-usd">0,00</span></label>
+                  <label>Оплачено: <span id="paid-usd">0,00</span></label>
+                  <label>Відвантажено: <span id="shipped-usd">0,00</span></label>
                 </div>
+              </div>
 
-                <!-- Блок EUR (Євро) - Жовтуватий/теплий відтінок -->
-                <div
-                  id="box-currency-eur"
-                  style="
+              <!-- Блок EUR (Євро) - Жовтуватий/теплий відтінок -->
+              <div id="box-currency-eur" style="
                     flex: 1;
                     border: 1px solid #cbd5e1;
                     padding: 12px;
                     border-radius: 6px;
                     background: #fefce8;
-                  "
-                >
-                  <label
-                    style="
+                  ">
+                <label style="
                       font-weight: bold;
                       display: block;
                       margin-bottom: 8px;
                       color: #a16207;
-                    "
-                    >EUR (Євро):</label
-                  >
-                  <div
-                    style="
+                    ">EUR (Євро):</label>
+                <div style="
                       display: flex;
                       flex-direction: column;
                       gap: 4px;
                       font-size: 13px;
                       color: #1e293b;
-                    "
-                  >
-                    <label>Сума дог.: <span id="sum-eur">0,00</span></label>
-                    <label>Оплачено: <span id="paid-eur">0,00</span></label>
-                    <label
-                      >Відвантажено: <span id="shipped-eur">0,00</span></label
-                    >
-                  </div>
+                    ">
+                  <label>Сума дог.: <span id="sum-eur">0,00</span></label>
+                  <label>Оплачено: <span id="paid-eur">0,00</span></label>
+                  <label>Відвантажено: <span id="shipped-eur">0,00</span></label>
                 </div>
               </div>
-
-              <div id="box-contract-notes">
-                <label for="contract-notes">Примітки</label>
-                <textarea name="contract-notes" id="contract-notes"></textarea>
-              </div>
-
-              <button type="button" id="btn-save-contract">Зберегти</button>
             </div>
-            <!-- кінець .contract-main-info -->
 
-            <!-- Права колонка: Блок специфікацій -->
-            <div class="contract-specifications-info">
-              <h3>Специфікації</h3>
-              <button type="button" id="btn-add-specification">
-                Додати специфікацію
-              </button>
-              <div id="contract-specifications-container">
-                Тут відображається список специфікацій до договору.
-              </div>
+            <div id="box-contract-notes">
+              <label for="contract-notes">Примітки</label>
+              <textarea name="contract-notes" id="contract-notes"></textarea>
             </div>
-            <!-- кінець .contract-specifications-info -->
+
+            <button type="button" id="btn-save-contract">Зберегти</button>
           </div>
-          <!-- кінець .modal-layout -->
+          <!-- кінець .contract-main-info -->
+
+          <!-- Права колонка: Блок специфікацій -->
+          <div class="contract-specifications-info">
+            <h3>Специфікації</h3>
+            <button type="button" id="btn-add-specification">
+              Додати специфікацію
+            </button>
+            <div id="contract-specifications-container">
+              Тут відображається список специфікацій до договору.
+            </div>
+          </div>
+          <!-- кінець .contract-specifications-info -->
         </div>
-        <!-- кінець .modal-content -->
-      </form>
-    </dialog>
-
-    <!--🔶 Блок 6. Контейнер заповнення інформації про Специфікацію -->
-    <dialog id="modal-add-specification">
-      <div class="modal-header">
-        <h2>Специфікація</h2>
-        <button
-          type="button"
-          id="btn-close-modal-specification"
-          class="btn-close"
-        >
-          ×
-        </button>
+        <!-- кінець .modal-layout -->
       </div>
-      <form id="form-add-specification">
-        <div class="modal-content">
-          <input type="hidden" name="specification-id" id="specification-id" />
+      <!-- кінець .modal-content -->
+    </form>
+  </dialog>
 
-          <!-- Верхній рядок: Валюта, Курс, Загальна сума -->
-          <div class="spec-top-row">
-            <div class="spec-field-group">
-              <label for="spec-number">Номер специфікації</label>
-              <input
-                type="text"
-                name="spec-number"
-                id="spec-number"
-                class="input-field"
-                placeholder="напр. 3 або №3"
-              />
-            </div>
-
-            <div class="spec-field-group">
-              <label for="spec-currency">Валюта</label>
-              <select
-                name="spec-currency"
-                id="spec-currency"
-                class="input-field"
-              >
-                <option value="UAH" selected>UAH (Гривня)</option>
-                <option value="USD">USD (Долар США)</option>
-                <option value="EUR">EUR (Євро)</option>
-              </select>
-            </div>
-
-            <div class="spec-field-group">
-              <label for="spec-currency-rate">Курс валюти</label>
-              <input
-                type="number"
-                step="0.0001"
-                name="spec-currency-rate"
-                id="spec-currency-rate"
-                class="input-field"
-              />
-            </div>
-
-            <div class="spec-field-group">
-              <label>Заг. сума специф. в грн.</label>
-              <input
-                type="text"
-                name="spec-total-amount-in-uah"
-                id="spec-total-amount-in-uah"
-                class="input-field"
-                readonly
-              />
-            </div>
-          </div>
-          <br />
-
-          <!-- Таблиця товарів -->
-          <table class="spec-products-table">
-            <thead>
-              <tr>
-                <th>Товар</th>
-                <th>Кількість</th>
-                <th>Ціна</th>
-                <th>ПДВ</th>
-                <th>Вартість</th>
-                <th>Крайня дата опл.</th>
-                <th>Крайня дата пост.</th>
-                <th>Оплати/Відвантаження</th>
-                <th>Дії</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>
-                  <input
-                    type="text"
-                    name="product-name"
-                    id="spec-product-input"
-                    list="products-list"
-                    placeholder="Почніть введення..."
-                  />
-                </td>
-              </tr>
-            </tbody>
-          </table>
-
-          <datalist id="products-list">
-            <!-- Сюди JavaScript завантажить варіанти товарів -->
-          </datalist>
-          <br />
-
-          <button type="button" id="btn-add-row" class="btn-secondary">
-            + Додати товар
-          </button>
-          <br /><br />
-
-          <!-- Підсумкова інформаційна панель -->
-          <div class="spec-summary-bar">
-            <span>Загальна вартість: <b>90.00 грн</b></span>
-            <span>Всього оплачено: <b>0.00 грн</b></span>
-            <span>Всього відвантажено: <b>0.00 грн</b></span>
-          </div>
-          <br /><br />
-
-          <!-- Кнопка збереження специфікації -->
-          <button type="button" id="btn-save-specification" class="btn-success">
-            Зберегти специфікацію
-          </button>
-        </div>
-      </form>
-    </dialog>
-
-    <!--🔶 Блок 7. Міні-вікно оплат та відвантажень для рядка товару -->
-    <dialog id="modal-pay-ship">
-      <div class="modal-header">
-        <h3>
-          Оплати та Відвантаження:
-          <span id="pay-ship-product-name" style="font-weight: normal"></span>
-        </h3>
-        <button type="button" id="btn-close-modal-pay-ship" class="btn-close">
-          ×
-        </button>
-      </div>
+  <!--🔶 Блок 6. Контейнер заповнення інформації про Специфікацію -->
+  <dialog id="modal-add-specification">
+    <div class="modal-header">
+      <h2>Специфікація</h2>
+      <button type="button" id="btn-close-modal-specification" class="btn-close">
+        ×
+      </button>
+    </div>
+    <form id="form-add-specification">
       <div class="modal-content">
-        <input type="hidden" id="current-row-index" />
+        <input type="hidden" name="specification-id" id="specification-id" />
 
-        <table
-          id="pay-ship-table"
-          style="width: 100%; border-collapse: collapse; margin-top: 10px"
-        >
+        <!-- Верхній рядок: Валюта, Курс, Загальна сума -->
+        <div class="spec-top-row">
+          <div class="spec-field-group">
+            <label for="spec-number">Номер специфікації</label>
+            <input type="text" name="spec-number" id="spec-number" class="input-field" placeholder="напр. 3 або №3" />
+          </div>
+
+          <div class="spec-field-group">
+            <label for="spec-currency">Валюта</label>
+            <select name="spec-currency" id="spec-currency" class="input-field">
+              <option value="UAH" selected>UAH (Гривня)</option>
+              <option value="USD">USD (Долар США)</option>
+              <option value="EUR">EUR (Євро)</option>
+            </select>
+          </div>
+
+          <div class="spec-field-group">
+            <label for="spec-currency-rate">Курс валюти</label>
+            <input type="number" step="0.0001" name="spec-currency-rate" id="spec-currency-rate" class="input-field" />
+          </div>
+
+          <div class="spec-field-group">
+            <label>Заг. сума специф. в грн.</label>
+            <input type="text" name="spec-total-amount-in-uah" id="spec-total-amount-in-uah" class="input-field"
+              readonly />
+          </div>
+        </div>
+        <br />
+
+        <!-- Таблиця товарів -->
+        <table class="spec-products-table">
           <thead>
             <tr>
-              <th>Дата оплати</th>
-              <th>Сума оплати</th>
-              <th>Дата поставки</th>
-              <th>Сума поставки</th>
+              <th>Товар</th>
+              <th>Кількість</th>
+              <th>Ціна</th>
+              <th>ПДВ</th>
+              <th>Вартість</th>
+              <th>Крайня дата опл.</th>
+              <th>Крайня дата пост.</th>
+              <th>Оплати/Відвантаження</th>
               <th>Дії</th>
             </tr>
           </thead>
           <tbody>
-            <!-- Рядки додаватимуться динамічно через JS -->
+            <tr>
+              <td>
+                <input type="text" name="product-name" id="spec-product-input" list="products-list"
+                  placeholder="Почніть введення..." />
+              </td>
+            </tr>
           </tbody>
         </table>
+
+        <datalist id="products-list">
+          <!-- Сюди JavaScript завантажить варіанти товарів -->
+        </datalist>
         <br />
-        <button type="button" id="btn-add-pay-ship-row" class="btn-secondary">
-          + Додати запис
+
+        <button type="button" id="btn-add-row" class="btn-secondary">
+          + Додати товар
         </button>
         <br /><br />
-        <button type="button" id="btn-save-pay-ship" class="btn-success">
-          Зберегти
+
+        <!-- Підсумкова інформаційна панель -->
+        <div class="spec-summary-bar">
+          <span>Загальна вартість: <b>90.00 грн</b></span>
+          <span>Всього оплачено: <b>0.00 грн</b></span>
+          <span>Всього відвантажено: <b>0.00 грн</b></span>
+        </div>
+        <br /><br />
+
+        <!-- Кнопка збереження специфікації -->
+        <button type="button" id="btn-save-specification" class="btn-success">
+          Зберегти специфікацію
         </button>
       </div>
-    </dialog>
+    </form>
+  </dialog>
 
-    <script src="{{url_for ('static', filename='dashboard.js')}}"></script>
-  </body>
+  <!--🔶 Блок 7. Міні-вікно оплат та відвантажень для рядка товару -->
+  <dialog id="modal-pay-ship">
+    <div class="modal-header">
+      <h3>
+        Оплати та Відвантаження:
+        <span id="pay-ship-product-name" style="font-weight: normal"></span>
+      </h3>
+      <button type="button" id="btn-close-modal-pay-ship" class="btn-close">
+        ×
+      </button>
+    </div>
+    <div class="modal-content">
+      <input type="hidden" id="current-row-index" />
+
+      <table id="pay-ship-table" style="width: 100%; border-collapse: collapse; margin-top: 10px">
+        <thead>
+          <tr>
+            <th>Дата оплати</th>
+            <th>Сума оплати</th>
+            <th>Дата поставки</th>
+            <th>Сума поставки</th>
+            <th>Дії</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Рядки додаватимуться динамічно через JS -->
+        </tbody>
+      </table>
+      <br />
+      <button type="button" id="btn-add-pay-ship-row" class="btn-secondary">
+        + Додати запис
+      </button>
+      <br /><br />
+      <button type="button" id="btn-save-pay-ship" class="btn-success">
+        Зберегти
+      </button>
+    </div>
+  </dialog>
+
+  <script src="{{url_for ('static', filename='dashboard.js')}}"></script>
+</body>
+
 </html>
