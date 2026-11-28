@@ -1,15 +1,16 @@
 # =================================================================================================
-#    1  Налаштування
+#    1.  Налаштування
 # =================================================================================================
 
 from flask import Flask, render_template, request, jsonify, session, redirect
 import os
 from dotenv import load_dotenv
-from flask_sqlalchemy import SQLAlchemy
+from extensions import db
 import uuid
 from werkzeug.utils import secure_filename
 from flask import send_from_directory
 import os
+from datetime import datetime
 
 
 # Завантажуємо змінні з файла .env
@@ -17,119 +18,30 @@ load_dotenv()
 
 app = Flask(__name__)
 
-# Отримуємо значення з .env
+# Зберігаємо налаштування бази даних з .env
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
+
+# Задаємо секретний ключ для безпеки сесій та шифрування
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
+
+# Вимикаємо зайве відстеження змін у базі задля економії пам'яті
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-db = SQLAlchemy(app)
+# Зв'язує базу даних (db) з Flask-додатком (app), щоб застосунок міг використовувати налаштування підключення та керувати базою.
+db.init_app(app)
 
 # Головна папка для збереження документів
-MAIN_STORAGE = os.path.join(os.getcwd(), 'contracts_archive')
+MAIN_STORAGE = os.path.join(os.getcwd(), 'contracts_docs')
 
 
 # =================================================================================================
-#    2  Класи
+#    2.  Класи
 # =================================================================================================
 
-# 2.1. Користувачі
-class User(db.Model):
-    __tablename__ = 'users'
-
-    id = db.Column(db.Integer, primary_key=True)
-    user_name_db = db.Column(db.String(80), unique=True, nullable=False)
-    user_password_db = db.Column(db.String(256), nullable=False)
-
-
-# 2.2.  Товари
-class Product (db.Model):
-    __tablename__ = 'products'
-
-    id = db.Column(db.Integer, primary_key=True)
-    product_name_db = db.Column(db.String(255), nullable=False)
-    product_price_db = db.Column(db.Numeric(10, 2), nullable=False, default=0.00)
-
-class Counterparty (db.Model):
-    __tablename__ = 'counterparty'
-
-    id = db.Column(db.Integer, primary_key=True)
-    counterparty_name_db = db.Column(db.String(255), nullable=True)
-    counterparty_edrpou_db = db.Column(db.String, nullable=True)
-    counterparty_ipn_db = db.Column(db.String, nullable=False)
-    counterparty_contacts_db = db.Column(db.String(1000), nullable=False)
-    counterparty_adress_db = db.Column(db.String(1000), nullable=False)
-
-
-class Contract(db.Model):
-    __tablename__ = 'contracts'
-
-    id = db.Column(db.Integer, primary_key=True)
-    reg_number_contract_db = db.Column(db.String(255), nullable=True)
-    agreement_number_db = db.Column(db.String(255), nullable=True)
-    contract_number_db = db.Column(db.String(255), nullable=True)
-    counterparty_1_db = db.Column(db.String(255), nullable=True)
-    counterparty_2_db = db.Column(db.String(255), nullable=True)
-    contract_date_db = db.Column(db.String(50), nullable=True)
-    end_date_db = db.Column(db.String(50), nullable=True)
-    auto_prolongation_db = db.Column(db.Boolean, default=False)
-    archival_contracts_db = db.Column(db.Boolean, default=False)
-    user_db = db.Column(db.String(80), nullable=True)
-    contract_type_db = db.Column(db.String(100), nullable=True)
-    contract_stage_db = db.Column(db.String(100), nullable=True)
-    funds_type_db = db.Column(db.String(100), nullable=True)
-    contract_notes_db = db.Column(db.Text, nullable=True)
-
-class Specification(db.Model):
-    __tablename__ = 'specifications'
-
-    id = db.Column(db.Integer, primary_key=True)  # Унікальний ідентифікатор специфікації
-    contract_id = db.Column(db.Integer, db.ForeignKey('contracts.id'), nullable=False)  # Зовнішній ключ для зв'язку з конкретним договором
-    spec_number_db = db.Column(db.String(100), nullable=True) # Номер специфікації
-    spec_currency_db = db.Column(db.String(10), nullable=True)  # Валюта специфікації (UAH, USD, EUR)
-    spec_currency_rate_db = db.Column(db.Numeric(10, 4), nullable=True)  # Курс валюти
-    spec_total_amount_db = db.Column(db.Numeric(12, 2), nullable=True)  # Загальна сума специфікації в грн
-
-# 2.4. Позиції (товари) у специфікації
-class SpecificationItem(db.Model):
-    __tablename__ = 'specification_items'
-
-    id = db.Column(db.Integer, primary_key=True)  # Унікальний ідентифікатор рядка товару
-    specification_id = db.Column(db.Integer, db.ForeignKey('specifications.id'), nullable=False)  # Зв'язок із батьківською специфікацією
-    product_name_db = db.Column(db.String(255), nullable=False)  # Назва товару
-    product_qty_db = db.Column(db.Numeric(10, 2), nullable=False, default=0.00)  # Кількість товару
-    product_price_db = db.Column(db.Numeric(10, 2), nullable=False, default=0.00)  # Ціна за одиницю
-    product_vat_db = db.Column(db.String(50), nullable=True)  # Ставка ПДВ (з ПДВ / без ПДВ)
-    pay_deadline_db = db.Column(db.String(50), nullable=True)   # <--- НОВЕ ПОЛЕ: Крайня дата оплати
-    ship_deadline_db = db.Column(db.String(50), nullable=True)  # <--- НОВЕ ПОЛЕ: Крайня дата поставки
-
-
-# 2.5. Записи оплат та відвантажень для кожного рядка товару
-class PaymentShippingRecord(db.Model):
-    __tablename__ = 'payment_shipping_records'
-
-    id = db.Column(db.Integer, primary_key=True)  # Унікальний ідентифікатор запису
-    item_id = db.Column(db.Integer, db.ForeignKey('specification_items.id'), nullable=False)  # Зв'язок із конкретним рядком товару у специфікації
-    pay_date_db = db.Column(db.String(50), nullable=True)  # Дата оплати
-    pay_sum_db = db.Column(db.Numeric(12, 2), nullable=True, default=0.00)  # Сума оплати
-    ship_date_db = db.Column(db.String(50), nullable=True)  # Дата поставки (відвантаження)
-    ship_sum_db = db.Column(db.Numeric(12, 2), nullable=True, default=0.00)  # Сума поставки
-
-    # 2.6. Документи по договору
-class ContractDocument(db.Model):
-    __tablename__ = 'contract_documents'
-
-    id = db.Column(db.Integer, primary_key=True)
-    contract_id = db.Column(db.Integer, db.ForeignKey('contracts.id'), nullable=False)
-    # 📌 ДОДАЄМО ЗВ'ЯЗОК ЗІ СПЕЦИФІКАЦІЄЮ (може бути порожнім, якщо документ прив'язаний напряму до договору)
-    specification_id = db.Column(db.Integer, db.ForeignKey('specifications.id', ondelete='CASCADE'), nullable=True)
-    doc_type_db = db.Column(db.String(50), nullable=False)     # Тип (dohovir, akt_posluh, vydatkova, rakhunok тощо)
-    file_name_db = db.Column(db.String(255), nullable=False)   # Оригінальна назва файлу або збережена назва
-    file_path_db = db.Column(db.String(500), nullable=False)   # Шлях до файлу на сервері
-
-
+from models import User, Product, Counterparty, Contract, Specification, SpecificationItem, PaymentShippingRecord, ContractDocument
 
 # =================================================================================================
-#    3  Маршрути Авторизація
+#    3.  Маршрути Авторизація
 # =================================================================================================
 
 # 3.1. Основна адреса
@@ -174,7 +86,7 @@ def dashboard():
 
 
 # =================================================================================================
-#    4  Маршрути вкладка Товари
+#    4.  Маршрути вкладка Товари
 # =================================================================================================
 
 # 4.1. Створення нового товару (API)
@@ -185,7 +97,6 @@ def create_product():
     # Валідація
     if not data or not data.get('product-name'):
         return jsonify({'error': "Назва товару є обов'язковою"}), 400
-
     
     # Очищення та нормалізація ціни
     raw_price = data.get('product-price')
@@ -258,7 +169,6 @@ def update_product(product_id):
     return jsonify({'message': 'Товар успішно оновлено'}), 200
 # -----------------------------------------------------------------------------------------------
 
-
 # 4.5. Видалення товару за ID
 @app.route('/api/products/<int:product_id>', methods=['DELETE'])
 def delete_product(product_id):
@@ -274,9 +184,8 @@ def delete_product(product_id):
 
 
 # =================================================================================================
-#    5  Маршрути вкладка Контрагенти
+#    5.  Маршрути вкладка Контрагенти
 # =================================================================================================
-
 
 # 5.1. Створення нового Контрагента (API)
 @app.route('/api/counterparties', methods = ['POST'])
@@ -397,9 +306,8 @@ def delete_counterparty(counterparty_id):
 
 
 # =================================================================================================
-#    6  Маршрути вкладка Договори
+#    6.  Маршрути вкладка Договори
 # =================================================================================================
-
 
 # 6.1. Створення нового Договору (API)
 @app.route('/api/contracts', methods = ['POST'])
@@ -436,7 +344,7 @@ def create_contract():
     }), 201
 # ------------------------------------------------------------------------------------------------------
 
-# Отримання списку всіх договорів (API)
+# 6.2. Отримання списку всіх договорів (API)
 @app.route('/api/contracts', methods=['GET'])
 def get_contracts():
     try:
@@ -507,7 +415,7 @@ def get_contracts():
         return jsonify({'error': str(e)}), 500
 # --------------------------------------------------------------------------------------------------------
 
-# Отримання даних одного договору за ID (API)
+# 6.3. Отримання даних одного договору за ID (API)
 @app.route('/api/contracts/<int:contract_id>', methods=['GET'])
 def get_contract(contract_id):
     contract = Contract.query.get_or_404(contract_id)
@@ -535,7 +443,83 @@ def get_contract(contract_id):
     }), 200
 # ------------------------------------------------------------------------------------------------------
 
-# Створення специфікації для конкретного договору (API)
+# 6.4. Оновлення даних існуючого Договору (API)
+@app.route('/api/contracts/<int:contract_id>', methods=['PUT'])
+def update_contract(contract_id):
+    contract = Contract.query.get_or_404(contract_id)
+    data = request.get_json()
+
+    if not data:
+        return jsonify({'error': "Дані відсутні"}), 400
+
+    # Оновлюємо поля договору в базі даних
+    contract.reg_number_contract_db = data.get('reg-number-contract')
+    contract.agreement_number_db = data.get('agreement-number')
+    contract.contract_number_db = data.get('contract-number')
+    contract.counterparty_1_db = data.get('counterparty-1')
+    contract.counterparty_2_db = data.get('counterparty-2')
+    contract.contract_date_db = data.get('contract-date')
+    contract.end_date_db = data.get('end-date')
+    contract.auto_prolongation_db = True if data.get('auto-prolongation') else False
+    contract.archival_contracts_db = True if data.get('archival-contracts') else False
+    contract.contract_type_db = data.get('contract-type')
+    contract.contract_stage_db = data.get('contract-stage')
+    contract.funds_type_db = data.get('funds-type')
+    contract.contract_notes_db = data.get('contract-notes')
+
+    db.session.commit()
+
+    return jsonify({'message': 'Договір успішно оновлено!'}), 200
+# ----------------------------------------------------------------------------------------------------------
+
+# 6.5. Видалення Договору за ID (API)
+@app.route('/api/contracts/<int:contract_id>', methods=['DELETE'])
+def delete_contract(contract_id):
+    contract = Contract.query.get(contract_id)
+
+    if not contract:
+        return jsonify({'error': 'Договір не знайдено'}), 404
+
+    try:
+        # 1. Видаляємо всі прикріплені документи договору з бази (та за бажанням файли з диску)
+        documents = ContractDocument.query.filter_by(contract_id=contract.id).all()
+        for doc in documents:
+            # Якщо потрібно також видаляти самі файли з папки на диску, можна розкоментувати:
+            # if doc.file_path and os.path.exists(doc.file_path):
+            #     os.remove(doc.file_path)
+            db.session.delete(doc)
+
+        # 2. Знаходимо всі специфікації цього договору
+        specs = Specification.query.filter_by(contract_id=contract.id).all()
+        for spec in specs:
+            # 3. Знаходимо всі товари (items) цієї специфікації
+            items = SpecificationItem.query.filter_by(specification_id=spec.id).all()
+            for item in items:
+                # 4. Видаляємо записи оплат та відвантажень для кожного товару
+                PaymentShippingRecord.query.filter_by(item_id=item.id).delete()
+            
+            # 5. Видаляємо товари специфікації
+            SpecificationItem.query.filter_by(specification_id=spec.id).delete()
+        
+        # 6. Видаляємо самі специфікації договору
+        Specification.query.filter_by(contract_id=contract.id).delete()
+
+        # 7. Тепер, коли всі дочірні записи (документи, специфікації тощо) видалено, безпечно видаляємо сам договір
+        db.session.delete(contract)
+        db.session.commit()
+
+        return jsonify({'message': 'Договір та всі пов’язані документи і специфікації успішно видалено'}), 200
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+# -------------------------------------------------------------------------------------------------------
+
+# =================================================================================================
+#    7.  Маршрути специфікацій до Договорів
+# =================================================================================================
+
+# 7.1. Створення специфікації для конкретного договору (API)
 @app.route('/api/contracts/<int:contract_id>/specifications', methods=['POST'])
 def create_specification(contract_id):
     data = request.get_json()
@@ -599,78 +583,7 @@ def create_specification(contract_id):
     return jsonify({'message': 'Специфікацію успішно збережено в БД!'}), 201
 # -----------------------------------------------------------------------------------------------------
 
-# 6.5. Оновлення даних існуючого Договору (API)
-@app.route('/api/contracts/<int:contract_id>', methods=['PUT'])
-def update_contract(contract_id):
-    contract = Contract.query.get_or_404(contract_id)
-    data = request.get_json()
-
-    if not data:
-        return jsonify({'error': "Дані відсутні"}), 400
-
-    # Оновлюємо поля договору в базі даних
-    contract.reg_number_contract_db = data.get('reg-number-contract')
-    contract.agreement_number_db = data.get('agreement-number')
-    contract.contract_number_db = data.get('contract-number')
-    contract.counterparty_1_db = data.get('counterparty-1')
-    contract.counterparty_2_db = data.get('counterparty-2')
-    contract.contract_date_db = data.get('contract-date')
-    contract.end_date_db = data.get('end-date')
-    contract.auto_prolongation_db = True if data.get('auto-prolongation') else False
-    contract.archival_contracts_db = True if data.get('archival-contracts') else False
-    contract.contract_type_db = data.get('contract-type')
-    contract.contract_stage_db = data.get('contract-stage')
-    contract.funds_type_db = data.get('funds-type')
-    contract.contract_notes_db = data.get('contract-notes')
-
-    db.session.commit()
-
-    return jsonify({'message': 'Договір успішно оновлено!'}), 200
-# ----------------------------------------------------------------------------------------------------------
-
-# 6.6. Видалення Договору за ID (API)
-@app.route('/api/contracts/<int:contract_id>', methods=['DELETE'])
-def delete_contract(contract_id):
-    contract = Contract.query.get(contract_id)
-
-    if not contract:
-        return jsonify({'error': 'Договір не знайдено'}), 404
-
-    try:
-        # 1. Видаляємо всі прикріплені документи договору з бази (та за бажанням файли з диску)
-        documents = ContractDocument.query.filter_by(contract_id=contract.id).all()
-        for doc in documents:
-            # Якщо потрібно також видаляти самі файли з папки на диску, можна розкоментувати:
-            # if doc.file_path and os.path.exists(doc.file_path):
-            #     os.remove(doc.file_path)
-            db.session.delete(doc)
-
-        # 2. Знаходимо всі специфікації цього договору
-        specs = Specification.query.filter_by(contract_id=contract.id).all()
-        for spec in specs:
-            # 3. Знаходимо всі товари (items) цієї специфікації
-            items = SpecificationItem.query.filter_by(specification_id=spec.id).all()
-            for item in items:
-                # 4. Видаляємо записи оплат та відвантажень для кожного товару
-                PaymentShippingRecord.query.filter_by(item_id=item.id).delete()
-            
-            # 5. Видаляємо товари специфікації
-            SpecificationItem.query.filter_by(specification_id=spec.id).delete()
-        
-        # 6. Видаляємо самі специфікації договору
-        Specification.query.filter_by(contract_id=contract.id).delete()
-
-        # 7. Тепер, коли всі дочірні записи (документи, специфікації тощо) видалено, безпечно видаляємо сам договір
-        db.session.delete(contract)
-        db.session.commit()
-
-        return jsonify({'message': 'Договір та всі пов’язані документи і специфікації успішно видалено'}), 200
-
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({'error': str(e)}), 500# -----------------------------------------------------------------------------------------------------------
-
-# Отримання списку специфікацій для конкретного договору (API)
+# 7.2. Отримання списку всіх специфікацій для конкретного договору (API)
 @app.route('/api/contracts/<int:contract_id>/specifications', methods=['GET'])
 def get_contract_specifications(contract_id):
     specs = Specification.query.filter_by(contract_id=contract_id).order_by(Specification.spec_number_db).all()
@@ -724,26 +637,7 @@ def get_contract_specifications(contract_id):
     return jsonify(specs_list), 200
 # -------------------------------------------------------------------------------------------------------
 
-# Видалення специфікації за ID (API)
-@app.route('/api/specifications/<int:spec_id>', methods=['DELETE'])
-def delete_specification(spec_id):
-    spec = Specification.query.get(spec_id)
-    if not spec:
-        return jsonify({'error': 'Специфікацію не знайдено'}), 404
-    
-    # Видаляємо пов'язані записи оплат/відвантажень та позиції
-    items = SpecificationItem.query.filter_by(specification_id=spec.id).all()
-    for item in items:
-        PaymentShippingRecord.query.filter_by(item_id=item.id).delete()
-    
-    SpecificationItem.query.filter_by(specification_id=spec.id).delete()
-    db.session.delete(spec)
-    db.session.commit()
-    
-    return jsonify({'message': 'Специфікацію успішно видалено'}), 200
-# -----------------------------------------------------------------------------------------------------------
-
-# Отримання даних однієї специфікації для редагування (API)
+# 7.3. Отримання даних однієї специфікації для редагування (API)
 @app.route('/api/specifications/<int:spec_id>', methods=['GET'])
 def get_specification(spec_id):
     spec = Specification.query.get_or_404(spec_id)
@@ -782,7 +676,7 @@ def get_specification(spec_id):
     }), 200
 # ----------------------------------------------------------------------------------------------------------
 
-# Оновлення існуючої специфікації (API PUT)
+# 7.4. Оновлення існуючої специфікації (API PUT)
 @app.route('/api/specifications/<int:spec_id>', methods=['PUT'])
 def update_specification(spec_id):
     spec = Specification.query.get_or_404(spec_id)
@@ -844,7 +738,86 @@ def update_specification(spec_id):
     db.session.commit()
     return jsonify({'message': 'Специфікацію успішно оновлено!'}), 200
 # ----------------------------------------------------------------------------------------------
-# 6.7. Отримання списку документів конкретного договору (API GET)
+
+# 7.5. Видалення специфікації за ID (API)
+@app.route('/api/specifications/<int:spec_id>', methods=['DELETE'])
+def delete_specification(spec_id):
+    spec = Specification.query.get(spec_id)
+    if not spec:
+        return jsonify({'error': 'Специфікацію не знайдено'}), 404
+    
+    # Видаляємо пов'язані записи оплат/відвантажень та позиції
+    items = SpecificationItem.query.filter_by(specification_id=spec.id).all()
+    for item in items:
+        PaymentShippingRecord.query.filter_by(item_id=item.id).delete()
+    
+    SpecificationItem.query.filter_by(specification_id=spec.id).delete()
+    db.session.delete(spec)
+    db.session.commit()
+    
+    return jsonify({'message': 'Специфікацію успішно видалено'}), 200
+# -----------------------------------------------------------------------------------------------------------
+
+# =================================================================================================
+#    8.  Збереження документів
+# =================================================================================================
+
+# 8.1. Завантаження нового документа до договору (API POST)
+@app.route('/api/contracts/<int:contract_id>/documents', methods=['POST'])
+def upload_contract_document(contract_id):
+    contract = Contract.query.get_or_404(contract_id)
+    
+    if 'file' not in request.files:
+        return jsonify({'error': 'Файл не передано'}), 400
+    
+    file = request.files['file']
+    doc_type = request.form.get('doc_type', 'dohovir') # наприклад: dohovir, akt_posluh, vydatkova, rakhunok
+
+    if file.filename == '':
+        return jsonify({'error': 'Файл не обрано'}), 400
+
+    # Визначаємо реєстраційний номер договору для папки (якщо немає, беремо з ID)
+    reg_number = contract.reg_number_contract_db or f"BR-{contract.id}_26"
+    safe_folder_name = reg_number.replace('/', '_').replace('\\', '_')
+
+    # 1. Перевіряємо/створюємо основну папку contracts_docs
+    if not os.path.exists(MAIN_STORAGE):
+        os.makedirs(MAIN_STORAGE)
+
+    # 2. Перевіряємо/створюємо папку договору (формат BR-2_26)
+    contract_folder = os.path.join(MAIN_STORAGE, safe_folder_name)
+    if not os.path.exists(contract_folder):
+        os.makedirs(contract_folder)
+
+    # 3. Формуємо назву файлу за шаблоном: [Номер]_[тип_документа].[розширення]
+    file_ext = os.path.splitext(file.filename)[1]
+    base_name = f"{safe_folder_name}_{doc_type}"
+    new_file_name = f"{base_name}{file_ext}"
+    target_path = os.path.join(contract_folder, new_file_name)
+
+    # Якщо файл уже існує, підбираємо наступний порядковий номер (_2, _3, _4...)
+    counter = 2
+    while os.path.exists(target_path):
+        new_file_name = f"{base_name}_{counter}{file_ext}"
+        target_path = os.path.join(contract_folder, new_file_name)
+        counter += 1
+
+    file.save(target_path)
+
+    # Зберігаємо інформацію в базу даних
+    new_doc = ContractDocument(
+        contract_id=contract.id,
+        doc_type_db=doc_type,
+        file_name_db=new_file_name,
+        file_path_db=f"/contracts_docs/{safe_folder_name}/{new_file_name}"
+    )
+    db.session.add(new_doc)
+    db.session.commit()
+
+    return jsonify({'message': 'Документ успішно завантажено!', 'id': new_doc.id, 'file_name': new_file_name}), 201
+# -------------------------------------------------------------------------------------------------
+
+# 8.2. Отримання списку документів конкретного договору (API GET)
 @app.route('/api/contracts/<int:contract_id>/documents', methods=['GET'])
 def get_contract_documents(contract_id):
     # Отримуємо документи які завантажені під самий договір безпосередньо
@@ -879,94 +852,14 @@ def get_contract_documents(contract_id):
     return jsonify(docs_list), 200
 # -------------------------------------------------------------------------------------------------
 
-
-# 6.8. Завантаження нового документа до договору (API POST)
-@app.route('/api/contracts/<int:contract_id>/documents', methods=['POST'])
-def upload_contract_document(contract_id):
-    contract = Contract.query.get_or_404(contract_id)
-    
-    if 'file' not in request.files:
-        return jsonify({'error': 'Файл не передано'}), 400
-    
-    file = request.files['file']
-    doc_type = request.form.get('doc_type', 'dohovir') # наприклад: dohovir, akt_posluh, vydatkova, rakhunok
-
-    if file.filename == '':
-        return jsonify({'error': 'Файл не обрано'}), 400
-
-    # Визначаємо реєстраційний номер договору для папки (якщо немає, беремо з ID)
-    reg_number = contract.reg_number_contract_db or f"BR-{contract.id}_26"
-    safe_folder_name = reg_number.replace('/', '_').replace('\\', '_')
-
-    # 1. Перевіряємо/створюємо основну папку contracts_archive
-    if not os.path.exists(MAIN_STORAGE):
-        os.makedirs(MAIN_STORAGE)
-
-    # 2. Перевіряємо/створюємо папку договору (формат BR-2_26)
-    contract_folder = os.path.join(MAIN_STORAGE, safe_folder_name)
-    if not os.path.exists(contract_folder):
-        os.makedirs(contract_folder)
-
-    # 3. Формуємо назву файлу за шаблоном: [Номер]_[тип_документа].[розширення]
-    file_ext = os.path.splitext(file.filename)[1]
-    base_name = f"{safe_folder_name}_{doc_type}"
-    new_file_name = f"{base_name}{file_ext}"
-    target_path = os.path.join(contract_folder, new_file_name)
-
-    # Якщо файл уже існує, підбираємо наступний порядковий номер (_2, _3, _4...)
-    counter = 2
-    while os.path.exists(target_path):
-        new_file_name = f"{base_name}_{counter}{file_ext}"
-        target_path = os.path.join(contract_folder, new_file_name)
-        counter += 1
-
-    file.save(target_path)
-
-    # Зберігаємо інформацію в базу даних
-    new_doc = ContractDocument(
-        contract_id=contract.id,
-        doc_type_db=doc_type,
-        file_name_db=new_file_name,
-        file_path_db=f"/contracts_archive/{safe_folder_name}/{new_file_name}"
-    )
-    db.session.add(new_doc)
-    db.session.commit()
-
-    return jsonify({'message': 'Документ успішно завантажено!', 'id': new_doc.id, 'file_name': new_file_name}), 201
-# -------------------------------------------------------------------------------------------------
-
-# 6.9. Видалення документа (API DELETE)
-@app.route('/api/documents/<int:doc_id>', methods=['DELETE'])
-def delete_contract_document(doc_id):
-    doc = ContractDocument.query.get_or_404(doc_id)
-    
-    # Повний шлях до файлу на диску
-    if doc.file_path_db:
-        # Відсікаємо провідний слеш для об'єднання шляхів
-        relative_path = doc.file_path_db.lstrip('/')
-        full_path = os.path.join(os.getcwd(), relative_path)
-        
-        # Фізично видаляємо файл, якщо він існує
-        if os.path.exists(full_path):
-            try:
-                os.remove(full_path)
-            except Exception as e:
-                print(f"Помолка видалення файлу з диска: {e}")
-
-    db.session.delete(doc)
-    db.session.commit()
-
-    return jsonify({'message': 'Документ успішно видалено'}), 200
-# -------------------------------------------------------------------------------------------------
-
-# API: Перегляд або завантаження файлу договору за ID документа з бази
+# 8.3. API: Перегляд або завантаження файлу договору за ID документа з бази
 @app.route('/api/documents/<int:doc_id>/download')
 def download_document_by_id(doc_id):
     doc = ContractDocument.query.get_or_404(doc_id)
     
-    archive_dir = os.path.abspath('contracts_archive')
+    archive_dir = os.path.abspath('contracts_docs')
     
-    # file_path_db зберігає шлях типу /contracts_archive/БР-23_26/БР-23_26_dohovir.pdf
+    # file_path_db зберігає шлях типу /contracts_docs/БР-23_26/БР-23_26_dohovir.pdf
     relative_path = doc.file_path_db.lstrip('/')
     full_path = os.path.join(os.getcwd(), relative_path)
     
@@ -979,27 +872,7 @@ def download_document_by_id(doc_id):
     return send_from_directory(directory, filename)
 # --------------------------------------------------------------------------------------------------
 
-# =================================================================================================
-#    ДОКУМЕНТИ СПЕЦИФІКАЦІЙ (НОВІ МАРШРУТИ)
-# =================================================================================================
-
-# 1. Отримання списку документів конкретної специфікації (API GET)
-@app.route('/api/specifications/<int:spec_id>/documents', methods=['GET'])
-def get_specification_documents(spec_id):
-    docs = ContractDocument.query.filter_by(specification_id=spec_id).all()
-    
-    docs_list = []
-    for d in docs:
-        docs_list.append({
-            'id': d.id,
-            'doc_type': d.doc_type_db,
-            'file_name': d.file_name_db,
-            'file_path': d.file_path_db
-        })
-    return jsonify(docs_list), 200
-# -------------------------------------------------------------------------------------------------
-
-# 2. Завантаження нового документа до конкретної специфікації (API POST)
+# 8.4. Завантаження нового документа до конкретної специфікації (API POST)
 @app.route('/api/specifications/<int:spec_id>/documents', methods=['POST'])
 def upload_specification_document(spec_id):
     spec = Specification.query.get_or_404(spec_id)
@@ -1018,7 +891,7 @@ def upload_specification_document(spec_id):
     reg_number = contract.reg_number_contract_db or f"BR-{contract.id}_26"
     safe_folder_name = reg_number.replace('/', '_').replace('\\', '_')
 
-    # Шлях до папки договору: contracts_archive/БР-7_26
+    # Шлях до папки договору: contracts_docs/БР-7_26
     contract_folder = os.path.join(MAIN_STORAGE, safe_folder_name)
     if not os.path.exists(contract_folder):
         os.makedirs(contract_folder)
@@ -1050,7 +923,7 @@ def upload_specification_document(spec_id):
         specification_id=spec.id,
         doc_type_db=doc_type,
         file_name_db=new_file_name,
-        file_path_db=f"/contracts_archive/{safe_folder_name}/{spec_folder_name}/{new_file_name}"
+        file_path_db=f"/contracts_docs/{safe_folder_name}/{spec_folder_name}/{new_file_name}"
     )
     db.session.add(new_doc)
     db.session.commit()
@@ -1062,18 +935,58 @@ def upload_specification_document(spec_id):
     }), 201
 # --------------------------------------------------------------------------------------------------------
 
-# =================================================================================================
-#    АНАЛІТИКА ТА ДЕДЛАЙНИ ДЛЯ ГОЛОВНОЇ СТОРІНКИ (API)
-# =================================================================================================
-from datetime import datetime
+# 8.5. Отримання списку документів конкретної специфікації (API GET)
+@app.route('/api/specifications/<int:spec_id>/documents', methods=['GET'])
+def get_specification_documents(spec_id):
+    docs = ContractDocument.query.filter_by(specification_id=spec_id).all()
+    
+    docs_list = []
+    for d in docs:
+        docs_list.append({
+            'id': d.id,
+            'doc_type': d.doc_type_db,
+            'file_name': d.file_name_db,
+            'file_path': d.file_path_db
+        })
+    return jsonify(docs_list), 200
+# -------------------------------------------------------------------------------------------------
 
+# 8.6. Видалення документів прикріплених як до самого договору, так і до кожної специфікації окремо (API DELETE)
+@app.route('/api/documents/<int:doc_id>', methods=['DELETE'])
+def delete_contract_document(doc_id):
+    doc = ContractDocument.query.get_or_404(doc_id)
+    
+    # Повний шлях до файлу на диску
+    if doc.file_path_db:
+        # Відсікаємо провідний слеш для об'єднання шляхів
+        relative_path = doc.file_path_db.lstrip('/')
+        full_path = os.path.join(os.getcwd(), relative_path)
+        
+        # Фізично видаляємо файл, якщо він існує
+        if os.path.exists(full_path):
+            try:
+                os.remove(full_path)
+            except Exception as e:
+                print(f"Помолка видалення файлу з диска: {e}")
+
+    db.session.delete(doc)
+    db.session.commit()
+
+    return jsonify({'message': 'Документ успішно видалено'}), 200
+# -------------------------------------------------------------------------------------------------
+
+# =================================================================================================
+#    9. АНАЛІТИКА ТА ДЕДЛАЙНИ ДЛЯ ГОЛОВНОЇ СТОРІНКИ (API)
+# =================================================================================================
+
+# 9.1. Отримання списку дедлайнів для головної сторінки (API)
 @app.route('/api/dashboard/deadlines', methods=['GET'])
 def get_dashboard_deadlines():
     try:
         deadlines_list = []
         today = datetime.now().date()
 
-        # 1. Збираємо дедлайни завершення договорів
+        # 9.1.1. Збираємо дедлайни завершення договорів
         contracts = Contract.query.all()
         for contract in contracts:
             if contract.contract_stage_db == 'completed':
@@ -1109,7 +1022,7 @@ def get_dashboard_deadlines():
                 except Exception as ex:
                     print(f"Помилка парсингу дати договору {contract.id}: {ex}")
 
-        # 2. Збираємо дедлайни оплат та відвантажень зі специфікацій
+        # 9.1.2. Збираємо дедлайни оплат та відвантажень зі специфікацій
         specs = Specification.query.all()
         for spec in specs:
             contract = Contract.query.get(spec.contract_id)
@@ -1189,6 +1102,7 @@ def get_dashboard_deadlines():
     except Exception as e:
         print(f"ПОМИЛКА У GET_DASHBOARD_DEADLINES: {str(e)}")
         return jsonify({'error': str(e)}), 500
+# --------------------------------------------------------------------------------------------------
     
 
 
